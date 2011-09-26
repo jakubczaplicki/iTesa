@@ -1,0 +1,23 @@
+== Welcome to iTesa (Ionspheric Tesla Atlas)
+
+..
+
+=== Documentation
+
+..
+
+=== Presentation Materials and other URLs
+* {SSTL}{http://www.sstl.co.uk/} 
+* {STRaND Nanosatellite} {http://www.sstl.co.uk/divisions/earth-observation-science/science-missions/strand-nanosatellite}
+* {s-android, Space Android: Android for Space Subsystems} {http://code.google.com/p/s-android/} 
+* {STRaND-1 Nanosatellite BBC (youtube)}{http://www.youtube.com/watch?v=A425n1kWh0o} 
+
+=== Project information
+..
+
+=== Contributing
+
+..
+
+=== License
+..
