@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+<TextView  
+    android:id="@+id/xB"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content"
+    android:textStyle="bold"
+    android:textSize="32sp"
+    android:editable="false"
+    android:singleLine="true"
+    />
+<TextView  
+    android:id="@+id/yB"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content"
+    android:textStyle="bold"
+    android:textSize="32sp"
+    android:editable="false"
+    android:singleLine="true"
+    />
+<TextView  
+    android:id="@+id/zB"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content"
+    android:textStyle="bold"
+    android:textSize="32sp"
+    android:editable="false"
+    android:singleLine="true"
+    />
+
+<TextView  
+    android:id="@+id/absB"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content"
+    android:textStyle="bold"
+    android:textSize="32sp"
+    android:editable="false"
+    android:singleLine="true"
+    />
+<TextView  
+    android:id="@+id/maxB"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content"
+    android:textStyle="bold"
+    android:textSize="40sp"
+    android:editable="false"
+    android:singleLine="true"
+    />
+<TextView  
+    android:id="@+id/magneticFieldNative"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:text="N/A" 
+    />
+</LinearLayout>
