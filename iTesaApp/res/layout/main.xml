@@ -6,6 +6,15 @@
     android:layout_height="fill_parent"
     >
 <TextView  
+    android:id="@+id/tB"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content"
+    android:textStyle="bold"
+    android:textSize="32sp"
+    android:editable="false"
+    android:singleLine="true"
+    />    
+<TextView  
     android:id="@+id/xB"
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"
@@ -50,11 +59,5 @@
     android:textSize="40sp"
     android:editable="false"
     android:singleLine="true"
-    />
-<TextView  
-    android:id="@+id/magneticFieldNative"
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="N/A" 
     />
 </LinearLayout>

@@ -15,6 +15,7 @@ import android.widget.TextView;
 public class ITesaActivity extends Activity {
 
 	SensorManager sensorManager = null;
+	protected TextView tBTextView;
 	protected TextView xBTextView;
 	protected TextView yBTextView;
 	protected TextView zBTextView;
@@ -39,6 +40,7 @@ public class ITesaActivity extends Activity {
         dbAdapter = new DBAdapter(this);
         dbAdapter.open();
         */
+        tBTextView = (TextView) findViewById(R.id.tB);
         xBTextView = (TextView) findViewById(R.id.xB);
         yBTextView = (TextView) findViewById(R.id.yB);
         zBTextView = (TextView) findViewById(R.id.zB);
@@ -50,7 +52,7 @@ public class ITesaActivity extends Activity {
         	public void run() {
         		updateGUI(); 
         		}
-        	}, 0, 100);
+        	}, 0, 500);
     
     }
     @SuppressWarnings("static-access")
@@ -94,17 +96,20 @@ public class ITesaActivity extends Activity {
 	private void updateGUI() {
       runOnUiThread(new Runnable() {
     	  public void run() {
-    		  String xMF = "x: " + xB + " µT";
-    		  xBTextView.setText(xMF);
-    		  String yMF = "y: " + yB + " µT";
-    		  yBTextView.setText(yMF);
-    		  String zMF = "z: " + zB + " µT";
-    		  zBTextView.setText(zMF);
-    		  String currentMF = "abs: " + absB + " µT";
-    		  absBTextView.setText(currentMF);
-    		  String maxMF = "max: " + maxB + " µT";
-    		  maxBTextView.setText(maxMF);
+    		  String str = "t: " + t;
+    		  tBTextView.setText(str);
+    		  str = "x: " + xB + " µT";
+    		  xBTextView.setText(str);
+    		  str = "y: " + yB + " µT";
+    		  yBTextView.setText(str);
+    		  str = "z: " + zB + " µT";
+    		  zBTextView.setText(str);
+    		  str = "abs: " + absB + " µT";
+    		  absBTextView.setText(str);
+    		  str = "max: " + maxB + " µT";
+    		  maxBTextView.setText(str);
 
+    		  tBTextView.invalidate();
     		  xBTextView.invalidate();
     		  yBTextView.invalidate();
     		  zBTextView.invalidate();
