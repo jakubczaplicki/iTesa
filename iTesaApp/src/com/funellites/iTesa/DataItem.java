@@ -1,24 +1,18 @@
 package com.funellites.iTesa;
 
-import java.sql.Date;
-
 public class DataItem {
 
-	  float xB;
-	  float yB;
-	  float zB;
-	  long time;
-	  Date created;
+    long t;
+    float x;
+    float y;
+    float z;
+    //Date created;
 
-	  public DataItem(float _xB, float _yB, float _zB, long _time) {
-		    this(_xB, _yB, _zB, _time, new Date(java.lang.System.currentTimeMillis()));
-		  }
-		  
-      public DataItem(float _xB, float _yB, float _zB, long _time, Date _created) {
-		    xB = _xB;
-		    yB = _yB;
-		    zB = _zB;
-		    time = _time;
-		    created = _created; // TODO: do we need this ?
-		  }	
+	public DataItem(long _time, float _xB, float _yB, float _zB) {
+        /*this(_xB, _yB, _zB, _time, new Date(java.lang.System.currentTimeMillis()));*/		  
+		t = _time;  
+		x = _xB;
+		y = _yB;
+		z = _zB;
+    }	
 }

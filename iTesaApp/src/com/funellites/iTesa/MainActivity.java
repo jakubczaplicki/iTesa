@@ -22,12 +22,16 @@ public class MainActivity extends Activity {
 	protected TextView absBTextView;
     protected TextView maxBTextView;
     TextView outMFN;
+    float xB,yB,zB; // TODO: move to DataItem constructor
+    long  t;
+
+    DataItem B = new DataItem(t, xB, yB, zB);
+
     float absB = 0;
     float maxB = 0;
-    float xB,yB,zB;
-    long  t;
-    // DBAdapter dbAdapter; // FIXME
-
+    DBAdapter dbAdapter;
+    
+    Timer updateTimer = new Timer("bUpdate");
 	
 	/** Called when the activity is first created. */
     @Override
@@ -35,11 +39,10 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        /* Open Database */
-        /* FIXME:
+        /* Create/Open Database */
         dbAdapter = new DBAdapter(this);
         dbAdapter.open();
-        */
+        
         tBTextView = (TextView) findViewById(R.id.tB);
         xBTextView = (TextView) findViewById(R.id.xB);
         yBTextView = (TextView) findViewById(R.id.yB);
@@ -47,13 +50,11 @@ public class MainActivity extends Activity {
         absBTextView = (TextView) findViewById(R.id.absB);
         maxBTextView = (TextView) findViewById(R.id.maxB);
 
-        Timer updateTimer = new Timer("bUpdate");
         updateTimer.scheduleAtFixedRate(new TimerTask() {
         	public void run() {
         		updateGUI(); 
         		}
         	}, 0, 500);
-    
     }
     @SuppressWarnings("static-access")
     @Override
@@ -70,8 +71,13 @@ public class MainActivity extends Activity {
         super.onStop();
         sensorManager.unregisterListener( sensorEventListener,
         		sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
-    }
 
+        // Stop the timer - updateGUI() before closing database
+        updateTimer.cancel();
+        // Close the database
+        dbAdapter.close();
+    }
+    
     private final SensorEventListener sensorEventListener = new SensorEventListener() {
     	
         public void onAccuracyChanged(Sensor sensor, int accuracy) { }
@@ -80,11 +86,11 @@ public class MainActivity extends Activity {
         	synchronized (this) {
         		switch (event.sensor.getType()){ 
         		case Sensor.TYPE_MAGNETIC_FIELD:
-	            	xB = event.values[0]; //lateral
-	            	yB = event.values[1]; //longitudinal
-	            	zB = event.values[2]; //vertical
-	            	t  = event.timestamp;
-	            	absB = Math.round( Math.sqrt(xB*xB+yB*yB+zB*zB) ); 
+	            	B.x = event.values[0]; //lateral
+	            	B.y = event.values[1]; //longitudinal
+	            	B.z = event.values[2]; //vertical
+	            	B.t  = event.timestamp;
+	            	absB = Math.round( Math.sqrt(B.x*B.x+B.y*B.y+B.z*B.z) ); 
 	            	if (absB > maxB)
 	            		maxB = absB;
 	            	break;
@@ -96,13 +102,13 @@ public class MainActivity extends Activity {
 	private void updateGUI() {
       runOnUiThread(new Runnable() {
     	  public void run() {
-    		  String str = "t: " + t;
+    		  String str = "t: " + B.t;
     		  tBTextView.setText(str);
-    		  str = "x: " + xB + " µT";
+    		  str = "x: " + B.x + " µT";
     		  xBTextView.setText(str);
-    		  str = "y: " + yB + " µT";
+    		  str = "y: " + B.y + " µT";
     		  yBTextView.setText(str);
-    		  str = "z: " + zB + " µT";
+    		  str = "z: " + B.z + " µT";
     		  zBTextView.setText(str);
     		  str = "abs: " + absB + " µT";
     		  absBTextView.setText(str);
@@ -116,10 +122,8 @@ public class MainActivity extends Activity {
     		  absBTextView.invalidate();
     		  maxBTextView.invalidate();
     		  
-    	      /* add to DB */
-    	      // FIXME: shit ain't workin'
-    		  /* DataItem newItem = new DataItem(xB, yB, zB, t);
-    	      long row = DBAdapter.insertData(newItem); */
+    	      /* add to Database */
+    	      dbAdapter.insertData(B); // returns long row
     	  }
       });
 	}	
