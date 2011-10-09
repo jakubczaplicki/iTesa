@@ -12,7 +12,7 @@ import android.os.Bundle;
 import android.widget.TextView;
 
 
-public class ITesaActivity extends Activity {
+public class MainActivity extends Activity {
 
 	SensorManager sensorManager = null;
 	protected TextView tBTextView;
