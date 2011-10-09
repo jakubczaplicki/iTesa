@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, ITesaActivity!</string>
-    <string name="app_name">ITesa</string>
+    <string name="app_name">iTesa</string>
 </resources>
