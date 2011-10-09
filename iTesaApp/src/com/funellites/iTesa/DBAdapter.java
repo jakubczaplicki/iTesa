@@ -110,7 +110,7 @@ public class DBAdapter {
 		    KEY_TIME + " long," +
 		    KEY_XB + " double," +
 		    KEY_YB + " double," +
-		    KEY_ZB + " double," +
+		    KEY_ZB + " double" +
 		    // CREATION_DATE + " long" + // TODO: do we need this ?
 		    ");";
 		
