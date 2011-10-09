@@ -1,23 +1,22 @@
 == Welcome to iTesa (Ionspheric Tesla Atlas)
 
-..
+The 'iTesa' app will be able to record the magnitude of the magnetic field about the phone during orbit. Used as a precursor to further scientific studies, such as detecting Alfvén waves (magnetic oscillations in our upper atmosphere), the iTesa app could provide proof of principle, and explores the possibility of using a mobile phone for scientific use in space.
 
 === Documentation
 
 ..
 
-=== Presentation Materials and other URLs
-* {SSTL}[http://www.sstl.co.uk/]
-* {STRaND Nanosatellite}[http://www.sstl.co.uk/divisions/earth-observation-science/science-missions/strand-nanosatellite]
-* {s-android, Space Android: Android for Space Subsystems}[http://code.google.com/p/s-android/]
-* {STRaND-1 Nanosatellite BBC (youtube)}[http://www.youtube.com/watch?v=A425n1kWh0o]
-
 === Project information
-..
 
-=== Contributing
+* {STRaND-1 Nanosatellite Home}[http://www.sstl.co.uk/divisions/earth-observation-science/science-missions/strand-nanosatellite]
+* {STRaND-1 Nanosatellite BBC (youtube)}[http://www.youtube.com/watch?v=A425n1kWh0o]
+* {STRaND-1 satellite in the Spring 2011 edition of OSCAR News}[http://www.uk.amsat.org/on_193_final.pdf]
+* {New Scientist – Space apps: smartphone at heart of satellite mission}[http://www.newscientist.com/blogs/onepercent/2011/10/britains-smartphone-spaceshot.html]
 
-..
+=== Presentation Materials and other URLs
+
+* {Winners of Space App Competition announced}[http://www.sstl.co.uk/news-and-events?story=1898]
+* {s-android, Space Android: Android for Space Subsystems}[http://code.google.com/p/s-android/]
 
 === License
 
