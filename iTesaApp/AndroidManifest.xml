@@ -5,7 +5,7 @@
       android:versionName="1.0">
     <uses-sdk android:minSdkVersion="10" />
 
-    <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="True">
+    <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="True" android:description="@string/desc">
         <activity android:name=".ITesaActivity"
                   android:label="@string/app_name">
             <intent-filter>
