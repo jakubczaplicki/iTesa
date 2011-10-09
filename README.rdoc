@@ -21,4 +21,4 @@
 
 === License
 
-The source code will be published {the Apache License, Version 2.0}[http://www.apache.org/licenses/LICENSE-2.0.htm]
+The source code will be published under {the Apache License, Version 2.0}[http://www.apache.org/licenses/LICENSE-2.0.htm]
