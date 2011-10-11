@@ -125,6 +125,12 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 	    absB = Math.round( Math.sqrt(B.x*B.x+B.y*B.y+B.z*B.z) ); 
 	    if (absB > maxB)
             maxB = absB;
+	    
+	    /* If we still use the Callback, then here would be the place to add data to queue.
+	     * Read the elements from queue for plot in other thread. Does it make sense ?   
+	     * http://developer.android.com/reference/java/util/Queue.html
+	     */
+	    
     }
 
 }

@@ -17,7 +17,7 @@ public class Magnetometer {
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         sensorManager.registerListener( sensorEventListener,
         		sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
-        		SensorManager.SENSOR_DELAY_GAME);
+        		SensorManager.SENSOR_DELAY_FASTEST);
     }
     
     private final SensorEventListener sensorEventListener = new SensorEventListener() {
@@ -45,6 +45,11 @@ public class Magnetometer {
     }
 
     public interface Callback {
+    	/* We probably don't need to use callback. Adding elements to a queue
+    	 * or an array and then accessing this queue/array from the MainActivity
+    	 * would probably be good enough. But who am I to say ? :)
+    	 */
+    	
         void updateData(long t, float x,float y,float z);
     }
 
