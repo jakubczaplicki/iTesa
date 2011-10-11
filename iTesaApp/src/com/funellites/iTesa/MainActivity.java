@@ -18,18 +18,29 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     protected TextView iTextView;
 
     float xB,yB,zB; // TODO: move to DataItem constructor
-    long t;
-    DataItem B = new DataItem(t, xB, yB, zB);
+    long t = 0;
     float absB = 0;
     float maxB = 0;
+
+    DataItem B = new DataItem(t, xB, yB, zB);
     
     Magnetometer magnetometer = null;
     
+    // DBAdapter dbAdapter; TODO: Enable DB
+    
+    Timer updateTimer = new Timer("bUpdate");
+	
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+
+        /* Create/Open Database */
+        /* TODO: Enable database
+        dbAdapter = new DBAdapter(this);
+        dbAdapter.open();
+        */
 
         tBTextView = (TextView) findViewById(R.id.tB);
         xBTextView = (TextView) findViewById(R.id.xB);
@@ -37,19 +48,17 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         zBTextView = (TextView) findViewById(R.id.zB);
         absBTextView = (TextView) findViewById(R.id.absB);
         maxBTextView = (TextView) findViewById(R.id.maxB);
-        iTextView = (TextView) findViewById(R.id.i);
+        iTextView = (TextView) findViewById(R.id.iB);
         
         magnetometer = new Magnetometer( this , this );
-        
-        Timer updateTimer = new Timer("bUpdate");
+
         updateTimer.scheduleAtFixedRate(new TimerTask() {
         	public void run() {
         		updateGUI(); 
         		}
         	}, 0, 500);
-    
     }
-    @SuppressWarnings("static-access")
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -62,6 +71,15 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     @Override
     protected void onStop() {
         super.onStop();
+        /*sensorManager.unregisterListener( sensorEventListener,
+        		sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));*/
+
+        // Stop the timer - updateGUI() before closing database
+        updateTimer.cancel();
+        // Close the database
+        /* TODO: Enable database
+        dbAdapter.close();
+        */
     }
     
 	private void updateGUI() {
@@ -79,6 +97,8 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     		  absBTextView.setText(str);
     		  str = "max: " + maxB + " µT";
     		  maxBTextView.setText(str);
+    		  str = "n: " + magnetometer.i;
+    		  iTextView.setText(str);
 
     		  tBTextView.invalidate();
     		  xBTextView.invalidate();
@@ -86,21 +106,25 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     		  zBTextView.invalidate();
     		  absBTextView.invalidate();
     		  maxBTextView.invalidate();
+    	      iTextView.invalidate();
+    		  
+    	      /* add to Database */
+    		  /* TODO: Enable database
+    	      dbAdapter.insertData(B); // returns long row
+    	      */
     	  }
       });
 	}
+
 	@Override
-	public void updateData(long time, float x, float y, float z, int i) {
+	public void updateData(long time, float x, float y, float z) {
 		B.t = time; // timestamp;
 	    B.x = x;    // lateral
 	    B.y = y;    // longitudinal
 	    B.z = z;    // vertical
-	    absB = Math.round( Math.sqrt(xB*xB+yB*yB+zB*zB) ); 
+	    absB = Math.round( Math.sqrt(B.x*B.x+B.y*B.y+B.z*B.z) ); 
 	    if (absB > maxB)
             maxB = absB;
-	    
-        String str = "i: " + i;
-        iTextView.setText(str);
     }
 
 }

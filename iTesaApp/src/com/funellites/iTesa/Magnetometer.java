@@ -9,7 +9,7 @@ import android.hardware.SensorManager;
 public class Magnetometer {
 	private SensorManager sensorManager = null;
     private Magnetometer.Callback cb = null;
-    private int i = 0;
+    public long i = 0;
     
     public Magnetometer(Context context,Magnetometer.Callback cb) {
     	this.cb=cb;
@@ -32,8 +32,7 @@ public class Magnetometer {
         			cb.updateData(event.timestamp,
         					      event.values[0], 
         					      event.values[1],
-        					      event.values[2],
-        					      i );
+        					      event.values[2] );
 	            	break;
                 }
         	}
@@ -46,7 +45,7 @@ public class Magnetometer {
     }
 
     public interface Callback {
-        void updateData(long t, float x,float y,float z, int i);
+        void updateData(long t, float x,float y,float z);
     }
 
 }
