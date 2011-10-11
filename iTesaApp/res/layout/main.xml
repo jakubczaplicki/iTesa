@@ -60,4 +60,13 @@
     android:editable="false"
     android:singleLine="true"
     />
+<TextView  
+    android:id="@+id/i"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content"
+    android:textStyle="bold"
+    android:textSize="20sp"
+    android:editable="false"
+    android:singleLine="true"
+    />
 </LinearLayout>
