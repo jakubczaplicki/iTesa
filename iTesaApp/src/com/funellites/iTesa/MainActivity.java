@@ -120,6 +120,13 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         */
 	}
 
+	private void updateGraph() {
+	    graphView.x = (int)(B.x);
+	    graphView.y = (int)(B.y);
+	    graphView.z = (int)(B.z);
+	    graphView.invalidate();
+	}
+	
 	@Override
 	public void updateData(long time, float x, float y, float z) {
 		B.t = time; // timestamp;
@@ -129,13 +136,6 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 	    absB = Math.round( Math.sqrt(B.x*B.x+B.y*B.y+B.z*B.z) ); 
 	    if (absB > maxB)
             maxB = absB;
-
-	    //FIXME: Move me to a separate thread or update me every updateGUI()
-	    graphView.x = (int)(x);
-	    graphView.y = (int)(y);
-	    graphView.z = (int)(z);
-	    graphView.invalidate();
-	    
 
 	    /* If we still use the Callback, then here would be the place to add data to queue.
 	     * Read the elements from queue for plot in other thread. Does it make sense ?   
@@ -161,6 +161,8 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 	        //handle update
 	        case 1:
                 updateGUI();
+	        case 2:
+	        	updateGraph();
 	        break;
             }
         }   
@@ -175,10 +177,11 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         public void run() {
             while (true) {
               //Send update to the main thread
-              messageHandler.sendMessage(Message.obtain(messageHandler, 1)); 
+              messageHandler.sendMessage(Message.obtain(messageHandler, 1));
+              messageHandler.sendMessage(Message.obtain(messageHandler, 2));
               
               try {
-                 Thread.sleep(500);
+                 Thread.sleep(25);
               } catch(Exception e) {
                  e.printStackTrace();
               }
