@@ -29,13 +29,12 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     GraphView graphView = null;
     
     // DBAdapter dbAdapter; TODO: Enable DB
-    
-    //Timer updateTimer = new Timer("bUpdate");
 	
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    	Log.d("iTesa", "MainActivity:onCreate()");
+    	super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
         /* Create/Open Database */
@@ -52,7 +51,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         maxBTextView = (TextView) findViewById(R.id.maxB);
         iTextView = (TextView) findViewById(R.id.iB);
         graphView = (GraphView)this.findViewById(R.id.XYPlot);
-        
+
         magnetometer = new Magnetometer( this , this );
 
         //start a thread to refresh UI
@@ -71,10 +70,13 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 
     @Override
     protected void onStop() {
-        super.onStop();
+    	Log.d("iTesa", "MainActivity:onStop()");
+    	super.onStop();
 
-        // FIXME: stop thread
-        // Close the database
+        // TODO: check that it actually works
+    	guiThread.stop();
+
+    	// Close the database
         /* TODO: Enable database
         dbAdapter.close();
         */
@@ -83,7 +85,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     private long tmpBt = 0;
     
 	private void updateGUI() {
-        String str = "t: " + B.t;
+        String str = "t: " + B.t + " ns";
         tBTextView.setText(str);
         str = "x: " + B.x + " µT";
         xBTextView.setText(str);
@@ -142,12 +144,12 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 	    
     }
 
-	private GuiThread thread;
+	private GuiThread guiThread;
 	
     private void makeThread() {
-        Log.w("iTesa", "creating GuiThread");
-        thread = new GuiThread();
-        thread.start();
+        Log.d("iTesa", "makeThread()");
+        guiThread = new GuiThread();
+        guiThread.start();
     }
 	
     // Instantiating the Handler associated with the main thread.
@@ -176,7 +178,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
               messageHandler.sendMessage(Message.obtain(messageHandler, 1)); 
               
               try {
-                 Thread.sleep(100);
+                 Thread.sleep(500);
               } catch(Exception e) {
                  e.printStackTrace();
               }

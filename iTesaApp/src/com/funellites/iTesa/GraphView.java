@@ -31,7 +31,10 @@ public class GraphView extends View {
         initGraphView();
     }	
 
+    private int h = 100, w = 100;
+    
     private void initGraphView() {
+    	Log.d("iTesa", "GraphView:initGraphView()");
 		setFocusable(true);
 
 	    Resources r = this.getResources();
@@ -42,22 +45,24 @@ public class GraphView extends View {
 	}
 
 
-    public int n = 0, x = 0, y = 0, z = 0;
+    public int i = 5, n = 10, x = 0, y = 0, z = 0;
     
     @Override
 	protected void onDraw(Canvas canvas) {
-      	//canvas.save();
+      	//canvas.save();  // <-- what is that ?
+    	
+	    h = getHeight(); // putting h and w inside initGraphView()
+	    w = getWidth();  // returns zero (too early for getting size?)
 
-    	//int a = (int)(Math.random()*200);
-	    canvas.drawCircle(++n, x+100, 5, xPaint);
-	    canvas.drawCircle(++n, y+100, 5, yPaint);
-	    canvas.drawCircle(++n, z+100, 5, zPaint);
-	    if ( n == 300 ) { n = 0; }
+	    canvas.drawCircle(n, x+100, 5, xPaint);
+	    canvas.drawCircle(n, y+100, 5, yPaint);
+	    canvas.drawCircle(n, z+100, 5, zPaint);
+	    n += i;
+	    if ( n >= w - 100 || n <= 10 ) { i *= -1; }
 
 	    //canvas.restore();
 
-	    //Log.w("iTesa GraphView:onDraw", "x: " + x + " y: " + y);
-
+	    //Log.d("iTesa", "GraphView:onDraw(), h: " + h + " w: " + w);
     }
     
 	/*public void updateGraph(float bX, float bY) {

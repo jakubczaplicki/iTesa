@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    > 
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/linear"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
     android:layout_height="fill_parent"
     >
 <TextView  
     android:id="@+id/tB"
-    android:layout_width="fill_parent" 
+    android:layout_width="wrap_content" 
     android:layout_height="wrap_content"
     android:textStyle="bold"
     android:textSize="16sp"
@@ -69,9 +76,13 @@
     android:editable="false"
     android:singleLine="true"
     />
+</LinearLayout>
+
  <com.funellites.iTesa.GraphView
     android:id="@+id/XYPlot"
     android:layout_width="fill_parent"
-    android:layout_height="300px"
+    android:layout_height="fill_parent"
+	android:layout_toRightOf="@id/linear"
     title="XYPlot"/>
-</LinearLayout>
+
+</RelativeLayout>

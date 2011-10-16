@@ -48,7 +48,7 @@ public class Magnetometer {
     };
     
     public void close() {
-    	Log.w("iTesa", "unregister Magnetometer listener");
+    	Log.v("iTesa", "unregister Magnetometer listener");
     	sensorManager.unregisterListener(sensorEventListener,
         		sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
     }
