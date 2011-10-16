@@ -39,11 +39,10 @@ public class GraphView extends View {
 
 	    Resources r = this.getResources();
 	    
-	    xPaint.setColor(r.getColor(R.color.x_color));
-	    yPaint.setColor(r.getColor(R.color.y_color));
-	    zPaint.setColor(r.getColor(R.color.z_color));
+	    xPaint.setColor(r.getColor(R.color.yellow));
+	    yPaint.setColor(r.getColor(R.color.red));
+	    zPaint.setColor(r.getColor(R.color.green));
 	}
-
 
     public int i = 5, n = 10, x = 0, y = 0, z = 0;
     

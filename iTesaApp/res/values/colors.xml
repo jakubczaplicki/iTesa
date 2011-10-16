@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-   <color name="x_color">#FFF0</color>    
-   <color name="y_color">#FF00</color>
-   <color name="z_color">#FF0F</color>
+   <color name="yellow">#FFFF00</color>    
+   <color name="red">#FF0000</color>
+   <color name="green">#00FF00</color>
+   <color name="blue">#0000FF</color>
 </resources>
