@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+   <string-array name="update_freq_options">
+      <item>50 ms</item>
+      <item>100 ms</item>
+      <item>200 ms</item>
+      <item>500 ms</item>
+      <item>1 sec</item>
+      <item>5 sec</item>
+      <item>10 sec</item>
+      <item>15 sec</item>
+      <item>30 sec</item>
+      <item>1 min</item>
+      <item>2 min</item>
+      <item>5 min</item>
+      <item>15 min</item>
+   </string-array>
+
+   <string-array name="update_freq_values">
+      <item>50</item>
+      <item>100</item>
+      <item>200</item>
+      <item>500</item>
+      <item>1000</item>
+      <item>5000</item>
+      <item>10000</item>
+      <item>15000</item>
+      <item>30000</item>
+      <item>60000</item>
+      <item>120000</item>
+      <item>300000</item>
+      <item>900000</item>
+   </string-array>
+</resources>
