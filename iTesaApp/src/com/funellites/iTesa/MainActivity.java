@@ -90,6 +90,8 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     protected void onResume() {
         super.onResume();
         Log.d("iTesa", "MainActivity:onResume()");
+        
+        updateFromPreferences();
     }
 
     @Override
@@ -233,7 +235,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
               messageHandler.sendMessage(Message.obtain(messageHandler, 2));
               
               try {
-                 Thread.sleep(50);
+                 Thread.sleep(updateFreq);
               } catch(Exception e) {
                  e.printStackTrace();
               }
@@ -258,7 +260,6 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 	        case (MENU_PREFERENCES): {
 	        	Intent i = new Intent(this, Preferences.class);
 	        	startActivityForResult(i, SHOW_PREFERENCES);
-	        	updateFromPreferences();
 	        	return true;
             }
         }
