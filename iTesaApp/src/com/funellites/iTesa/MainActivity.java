@@ -73,10 +73,19 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     	Log.d("iTesa", "MainActivity:onStop()");
     	super.onStop();
 
-        // TODO: check that it actually works
-    	guiThread.stop();
+        // stop the thread. Do not use unsafe deprecated guiThread.stop(); 
+    	// see : http://stackoverflow.com/questions/4756862/how-to-stop-a-thread )
+        guiThread.threadRunning  = false;
+        try {
+			guiThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+    	
+        // unregister magnetometer listener
+    	magnetometer.close();
 
-    	// Close the database
+    	// close the database
         /* TODO: Enable database
         dbAdapter.close();
         */
@@ -98,10 +107,14 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         str = "max: " + maxB + " µT";
         maxBTextView.setText(str);
         if ( magnetometer.i != 0 ) {
-            //Log.w("iTesa", "t=" + ((B.t - tmpBt)/1000000)/magnetometer.i);
-            str = "smpl.rate: " + ((B.t - tmpBt)/1000000)/magnetometer.i + " ms";
+            // I don't understand this number !! why is it ~50 ms ?
+        	str = "smpl.rate: " + ((B.t - tmpBt)/1000000)/magnetometer.i + " ms";
+        	// why is this number ~ 0 ms ?
+        	// str = "smpl.rate: " + magnetometer.delay + " ms";
             iTextView.setText(str);
         }
+        tmpBt = B.t;
+        magnetometer.i = 0;
 
         tBTextView.invalidate();
         xBTextView.invalidate();
@@ -110,9 +123,6 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         absBTextView.invalidate();
         maxBTextView.invalidate();
         iTextView.invalidate();
-
-        tmpBt = B.t;
-        magnetometer.i = 0;
     	      
         /* store data in sqlite db */
         /* TODO: Enable database
@@ -146,6 +156,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 
 	private GuiThread guiThread;
 	
+	
     private void makeThread() {
         Log.d("iTesa", "makeThread()");
         guiThread = new GuiThread();
@@ -170,18 +181,20 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 
     class GuiThread extends Thread {
         
-        public GuiThread() {
+        public boolean threadRunning = true;
+
+		public GuiThread() {
         }
         
         @Override
         public void run() {
-            while (true) {
+            while (threadRunning) {
               //Send update to the main thread
               messageHandler.sendMessage(Message.obtain(messageHandler, 1));
               messageHandler.sendMessage(Message.obtain(messageHandler, 2));
               
               try {
-                 Thread.sleep(25);
+                 Thread.sleep(50);
               } catch(Exception e) {
                  e.printStackTrace();
               }

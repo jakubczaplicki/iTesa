@@ -30,8 +30,6 @@ public class GraphView extends View {
         super(context, ats, defaultStyle);
         initGraphView();
     }	
-
-    private int h = 100, w = 100;
     
     private void initGraphView() {
     	Log.d("iTesa", "GraphView:initGraphView()");
@@ -45,6 +43,7 @@ public class GraphView extends View {
 	}
 
     public int i = 5, n = 10, x = 0, y = 0, z = 0;
+    private int h = 100, w = 100;
     
     @Override
 	protected void onDraw(Canvas canvas) {

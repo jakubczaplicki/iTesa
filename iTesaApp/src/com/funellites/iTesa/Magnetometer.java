@@ -7,10 +7,12 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
+/** All values are in micro-Tesla (uT) and measure the ambient magnetic field in the X, Y and Z axis. */ 
 public class Magnetometer {
 	private SensorManager sensorManager = null;
     private Magnetometer.Callback cb = null;
     public long i = 0;
+    public long delay = 0;
 
     public Magnetometer(Context context) {
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
@@ -27,16 +29,22 @@ public class Magnetometer {
         		sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
         		SensorManager.SENSOR_DELAY_FASTEST);
     }
+
+    private long TimeNew = java.lang.System.currentTimeMillis();
+    private long TimeOld = TimeNew;
     
     private final SensorEventListener sensorEventListener = new SensorEventListener() {
-    	
-        public void onAccuracyChanged(Sensor sensor, int accuracy) { }
 
+        public void onAccuracyChanged(Sensor sensor, int accuracy) { }
+        
         public void onSensorChanged(SensorEvent event) {
         	synchronized (this) {
         		switch (event.sensor.getType()){ 
         		case Sensor.TYPE_MAGNETIC_FIELD:
         			i++;
+        			TimeNew = java.lang.System.currentTimeMillis();
+        			delay = TimeNew - TimeOld;
+        			TimeOld = TimeNew;
         			cb.updateData(event.timestamp,
         					      event.values[0], 
         					      event.values[1],
@@ -48,7 +56,7 @@ public class Magnetometer {
     };
     
     public void close() {
-    	Log.v("iTesa", "unregister Magnetometer listener");
+    	Log.d("iTesa", "Magnetometer.close() - unregister magnetometer listener");
     	sensorManager.unregisterListener(sensorEventListener,
         		sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
     }
