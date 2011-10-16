@@ -10,7 +10,7 @@
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"
     android:textStyle="bold"
-    android:textSize="32sp"
+    android:textSize="16sp"
     android:editable="false"
     android:singleLine="true"
     />    
@@ -19,7 +19,7 @@
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"
     android:textStyle="bold"
-    android:textSize="32sp"
+    android:textSize="16sp"
     android:editable="false"
     android:singleLine="true"
     />
@@ -28,7 +28,7 @@
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"
     android:textStyle="bold"
-    android:textSize="32sp"
+    android:textSize="16sp"
     android:editable="false"
     android:singleLine="true"
     />
@@ -37,7 +37,7 @@
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"
     android:textStyle="bold"
-    android:textSize="32sp"
+    android:textSize="16sp"
     android:editable="false"
     android:singleLine="true"
     />
@@ -47,7 +47,7 @@
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"
     android:textStyle="bold"
-    android:textSize="32sp"
+    android:textSize="16sp"
     android:editable="false"
     android:singleLine="true"
     />
@@ -56,7 +56,7 @@
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"
     android:textStyle="bold"
-    android:textSize="40sp"
+    android:textSize="16sp"
     android:editable="false"
     android:singleLine="true"
     />
@@ -65,8 +65,13 @@
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"
     android:textStyle="bold"
-    android:textSize="32sp"
+    android:textSize="16sp"
     android:editable="false"
     android:singleLine="true"
     />
+ <com.funellites.iTesa.GraphView
+    android:id="@+id/XYPlot"
+    android:layout_width="fill_parent"
+    android:layout_height="300px"
+    title="XYPlot"/>
 </LinearLayout>

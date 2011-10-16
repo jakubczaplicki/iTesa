@@ -5,11 +5,19 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.util.Log;
 
 public class Magnetometer {
 	private SensorManager sensorManager = null;
     private Magnetometer.Callback cb = null;
     public long i = 0;
+
+    public Magnetometer(Context context) {
+        sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        sensorManager.registerListener( sensorEventListener,
+        		sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+        		SensorManager.SENSOR_DELAY_FASTEST);
+    }
     
     public Magnetometer(Context context,Magnetometer.Callback cb) {
     	this.cb=cb;
@@ -40,6 +48,7 @@ public class Magnetometer {
     };
     
     public void close() {
+    	Log.w("iTesa", "unregister Magnetometer listener");
     	sensorManager.unregisterListener(sensorEventListener,
         		sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
     }
@@ -49,8 +58,6 @@ public class Magnetometer {
     	 * or an array and then accessing this queue/array from the MainActivity
     	 * would probably be good enough. But who am I to say ? :)
     	 */
-    	
         void updateData(long t, float x,float y,float z);
     }
-
 }
