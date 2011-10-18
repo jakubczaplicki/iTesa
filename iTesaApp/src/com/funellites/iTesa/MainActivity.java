@@ -1,10 +1,5 @@
 package com.funellites.iTesa;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -138,40 +133,6 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 	    
     }
 	
-	public void writePhoneData(DataItem dataB){
-		//TODO: 1. accept an array of DataItems. 2. 
-		
-		
-		// Move this and accept a filename parameter
-		String FILENAME = "iTesaPhoneOutput.dat"; 
-		DataOutputStream dos = null;
-
-		
-		//Open the buffer and write the data
-		try {
-			dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(FILENAME)));
-          
-            //Write data to stream:
-            dos.writeLong(dataB.t);
-            dos.writeFloat(dataB.x);
-            dos.writeFloat(dataB.y);
-            dos.writeFloat(dataB.z);
-            
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } finally {
-            //Close 
-            try {
-                if (dos != null) {
-                    dos.flush();
-                    dos.close();
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
+	
 	
 }
