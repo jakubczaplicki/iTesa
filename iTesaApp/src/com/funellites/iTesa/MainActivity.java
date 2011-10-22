@@ -37,15 +37,11 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     protected TextView yBTextView;
     protected TextView zBTextView;
     protected TextView absBTextView;
+    protected TextView avgBTextView;
     protected TextView maxBTextView;
     protected TextView iTextView;
 
-    float xB,yB,zB; // TODO: move to DataItem constructor
-    long t = 0;
-    float absB = 0;
-    float maxB = 0;
-
-    DataItem B = new DataItem(t, xB, yB, zB);
+    DataItem B = new DataItem();
     Magnetometer magnetometer = null;
     GraphView graphView = null;
     
@@ -72,11 +68,12 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         yBTextView = (TextView) findViewById(R.id.yB);
         zBTextView = (TextView) findViewById(R.id.zB);
         absBTextView = (TextView) findViewById(R.id.absB);
+        avgBTextView = (TextView) findViewById(R.id.avgB);
         maxBTextView = (TextView) findViewById(R.id.maxB);
         iTextView = (TextView) findViewById(R.id.iB);
         graphView = (GraphView)this.findViewById(R.id.XYPlot);
 
-        magnetometer = new Magnetometer( this , this );
+        magnetometer = new Magnetometer( this , this, B );
 
         makeThread(); //start a thread to refresh UI
 
@@ -111,7 +108,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     	super.onDestroy();
     	Log.d("iTesa", "MainActivity:onDestroy()");
 
-    	// stop the thread. Do not use unsafe deprecated guiThread.stop(); 
+    	// stop the thread. Do not use unsafe depreciated guiThread.stop(); 
     	// see : http://stackoverflow.com/questions/4756862/how-to-stop-a-thread )
         guiThread.threadRunning  = false;
         try {
@@ -137,9 +134,11 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         yBTextView.setText(str);
         str = "z: " + B.z + " µT";
         zBTextView.setText(str);
-        str = "abs: " + absB + " µT";
+        str = "abs: " + B.abs + " µT";
         absBTextView.setText(str);
-        str = "max: " + maxB + " µT";
+        str = "avg: " + B.sma + " µT";
+        avgBTextView.setText(str);
+        str = "max: " + B.max + " µT";
         maxBTextView.setText(str);
         if ( magnetometer.i != 0 ) {
             // I don't understand this number !! why is it ~50 ms ?
@@ -157,6 +156,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         yBTextView.invalidate();
         zBTextView.invalidate();
         absBTextView.invalidate();
+        avgBTextView.invalidate();
         maxBTextView.invalidate();
         iTextView.invalidate();
     	      
@@ -179,14 +179,8 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 	 * http://developer.android.com/reference/java/util/Queue.html
 	 */	
 	@Override
-	public void updateData(long time, float x, float y, float z) {
-		B.t = time; // timestamp;
-	    B.x = x;    // lateral
-	    B.y = y;    // longitudinal
-	    B.z = z;    // vertical
-	    absB = Math.round( Math.sqrt(B.x*B.x+B.y*B.y+B.z*B.z) ); 
-	    if (absB > maxB)
-            maxB = absB;
+	public void updateData(DataItem _B) {
+		B = _B;
     }
 
 	

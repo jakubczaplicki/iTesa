@@ -18,21 +18,59 @@ package com.funellites.iTesa;
 
 public class DataItem {
 
-    long t;
-    float x;
-    float y;
-    float z;
-    //Date created;
+	long  t;    // timestamp [ns]
+    float x;    // lateral [uT]
+    float y;    // longitudinal [uT]
+    float z;    // vertical [uT]
+    float abs; // absolute B [uT]
+    float max; // max B [uT]
+    float min; // min B [uT]
+    float sma; // simple moving average B [uT]
 
-    public DataItem() {
-    }
+    /* Simple Moving Average */
+    private int size;
+    private float total = 0f;
+    private int index = 0;
+    private float samples[];
     
+    public DataItem() {
+    	setSMA(10);
+    }
+
     public DataItem(long _time, float _xB, float _yB, float _zB) {
-        /*this(_xB, _yB, _zB, _time, new Date(java.lang.System.currentTimeMillis()));*/
         t = _time;
         x = _xB;
         y = _yB;
         z = _zB;
+    	setSMA(10);
+    }
+    
+    public void add(long t, float x,float y,float z) {
+        this.t    = t;
+        this.x    = x;
+        this.y    = y;
+        this.z    = z;
+    	this.abs = Math.round( Math.sqrt(x*x+y*y+z*z) );
+    	this.addSMA(this.abs);
+    	this.sma = this.getAverage();
+	    if (this.abs > this.max)
+            this.max = this.abs;
+    }
+
+    public void setSMA(int size) {
+        this.size = size;
+        samples = new float[size];
+        for (int i = 0; i < size; i++) samples[i] = 0f;
+    }
+
+    public void addSMA(float x) {
+        total -= samples[index];
+        samples[index] = x;
+        total += x;
+        if (++index == size) index = 0;
+    }
+
+    public float getAverage() {
+        return total / size;
     }
 }
-
