@@ -118,7 +118,7 @@ public class GraphView extends View {
 	    path.addCircle(n, (float) (h*((Math.sin((double)n/100d)+1d)/2d)), 5, Path.Direction.CW);
 	    n += 1;
 	    if ( n >= w-10 ) { n = 0; }
-	    if ( pathArray.size() >= 100 ) {
+	    if ( pathArray.size() >= 400 ) {
 	    	pathArray.remove(0);
 	    }
 	    pathArray.add(path);
