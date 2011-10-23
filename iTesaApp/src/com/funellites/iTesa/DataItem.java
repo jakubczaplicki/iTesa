@@ -18,6 +18,9 @@ package com.funellites.iTesa;
 
 public class DataItem {
 
+	final boolean SMA = true;
+	final boolean WMA = false;
+	
 	long  t;    // timestamp [ns]
     float x;    // lateral [uT]
     float y;    // longitudinal [uT]
@@ -28,13 +31,13 @@ public class DataItem {
     float sma; // simple moving average B [uT]
 
     /* Simple Moving Average */
-    private int size;
+    private int size = 100; // TODO make this as an option/setting
     private float total = 0f;
     private int index = 0;
     private float samples[];
     
     public DataItem() {
-    	setSMA(10);
+    	setAvg(size);
     }
 
     public DataItem(long _time, float _xB, float _yB, float _zB) {
@@ -42,7 +45,7 @@ public class DataItem {
         x = _xB;
         y = _yB;
         z = _zB;
-    	setSMA(10);
+    	setAvg(size);
     }
     
     public void add(long t, float x,float y,float z) {
@@ -51,23 +54,39 @@ public class DataItem {
         this.y    = y;
         this.z    = z;
     	this.abs = Math.round( Math.sqrt(x*x+y*y+z*z) );
-    	this.addSMA(this.abs);
+    	this.addAvg(this.abs);
     	this.sma = this.getAverage();
 	    if (this.abs > this.max)
             this.max = this.abs;
     }
 
-    public void setSMA(int size) {
+    public void setSize(int _size) {
+    	size = _size;
+    }
+
+    public int getSize() {
+    	return size;
+    }
+
+    /** Set Simple Moving Average */
+    public void setAvg(int size) {
         this.size = size;
         samples = new float[size];
         for (int i = 0; i < size; i++) samples[i] = 0f;
     }
 
-    public void addSMA(float x) {
-        total -= samples[index];
-        samples[index] = x;
-        total += x;
-        if (++index == size) index = 0;
+    /** Add data to average */
+    public void addAvg(float x) {
+    	
+    	if (SMA) { /* Simple Moving Average */
+            total -= samples[index];
+            samples[index] = x;
+            total += x;
+            if (++index == size) index = 0;
+    	}
+    	else if (WMA){ /* Weight Moving Average */
+    		
+    	}
     }
 
     public float getAverage() {

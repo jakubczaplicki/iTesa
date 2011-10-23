@@ -136,7 +136,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         zBTextView.setText(str);
         str = "abs: " + B.abs + " µT";
         absBTextView.setText(str);
-        str = "avg: " + B.sma + " µT";
+        str = "avg(100): " + B.sma + " µT";
         avgBTextView.setText(str);
         str = "max: " + B.max + " µT";
         maxBTextView.setText(str);
@@ -165,10 +165,10 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 
 	/** Updates the graph on the UI. */	
 	private void updateGraph() {
-	    graphView.x = (int)(B.x);
-	    graphView.y = (int)(B.y);
-	    graphView.z = (int)(B.z);
-	    graphView.invalidate();
+	    //graphView.x = (int)(B.x);
+	    //graphView.y = (int)(B.y);
+	    //graphView.z = (int)(B.z);
+	    graphView.updateGraph( B.sma );
 	}
 	
 	/**
@@ -264,5 +264,6 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         Context context = getApplicationContext();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         updateFreq = Integer.parseInt(prefs.getString(Preferences.PREF_UPDATE_FREQ, "1000"));
+        //B.setSize( Integer.parseInt(prefs.getString(Preferences.PREF_UPDATE_AVGSIZE, "10")) );
     };
 }

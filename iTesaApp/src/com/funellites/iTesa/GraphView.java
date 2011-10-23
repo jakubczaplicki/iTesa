@@ -16,20 +16,32 @@
 
 package com.funellites.iTesa;
 
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
+/** Plot viewer loosely based on LunarLanding sample app */
+/* TODO : Should it be a separate thread just like in the
+ *        LunarLanding example ?*/
 public class GraphView extends View {
 
-	private Paint xPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-	private Paint yPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-	private Paint zPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
+	private Paint absPaint = new Paint(Paint.ANTI_ALIAS_FLAG); 
+    private ArrayList<Path> pathArray = new ArrayList<Path>(); // array of points to plot
+    private Path path;                // http://developer.android.com/reference/android/graphics/Path.html
+    private Bitmap mBackgroundImage;  // background image
+    private int h = 100, w = 100;     // initial view width and height
+    private int i = 5, n = 10;        // variables for point plotting functionality
+    
     public GraphView(Context context) {
         super(context);
         initGraphView();
@@ -53,41 +65,63 @@ public class GraphView extends View {
     private void initGraphView() {
     	Log.d("iTesa", "GraphView:initGraphView()");
 		setFocusable(true);
+		
+		Resources r = this.getResources();
 
-	    Resources r = this.getResources();
-	    
-	    xPaint.setColor(r.getColor(R.color.yellow));
-	    yPaint.setColor(r.getColor(R.color.red));
-	    zPaint.setColor(r.getColor(R.color.green));
-	}
+	    //absPaint.setColor(r.getColor(R.color.violet));
+		absPaint.setColor(Color.MAGENTA);
 
-    public int i = 5, n = 10, x = 0, y = 0, z = 0;
-    private int h = 100, w = 100;
-    
-    @Override
-	protected void onDraw(Canvas canvas) {
-      	//canvas.save();  // <-- what is that ?
-    	
-	    h = getHeight(); // putting h and w inside initGraphView()
-	    w = getWidth();  // returns zero (too early for getting size?)
+        // load background image as a Bitmap instead of a Drawable b/c
+        // we don't need to transform it and it's faster to draw this way
+        mBackgroundImage = BitmapFactory.decodeResource(r, R.drawable.earthmap);
+    }
 
-	    canvas.drawCircle(n, x+100, 5, xPaint);
-	    canvas.drawCircle(n, y+100, 5, yPaint);
-	    canvas.drawCircle(n, z+100, 5, zPaint);
-	    n += i;
-	    if ( n >= w - 100 || n <= 10 ) { i *= -1; }
-
-	    //canvas.restore();
-
-	    //Log.d("iTesa", "GraphView:onDraw(), h: " + h + " w: " + w);
+    public void destroy() {
+        if (mBackgroundImage != null) {
+        	mBackgroundImage.recycle();
+        }
     }
     
-	/**
-	 * Update graph from outside
+    private boolean firstRun = true;
+    @Override
+	protected void onDraw(Canvas canvas) {
+
+    	if (firstRun) {      // I know it's bad, but I don't know when to get view size. Putting getWidth
+            h = getHeight(); // and getHeight inside initGraphView() returns zero. Width and height are 
+            w = getWidth();  // not defined until the view is actually rendered to the screen. 
+                             // But when does it happen ?
+            mBackgroundImage = Bitmap.createScaledBitmap(mBackgroundImage, w, h, true); //resize background
+            firstRun = false;
+    	}
+
+    	// Draw the background image. Operations on the Canvas accumulate so this is like clearing the screen.
+        canvas.drawBitmap(mBackgroundImage, 0, 0, null);    	
+
+	    for (Path path : pathArray) {
+	    	canvas.drawPath(path, absPaint);
+	    	}
+	    
+	    // canvas.drawColor(Color.RED); // debug
+	    // Log.d("iTesa", "GraphView:onDraw(), h: " + h + " w: " + w); //debug log
+    }
+    
+    /**
+	 * Update graph from the MainActivity
 	 */
-    /*public void updateGraph(float bX, float bY) {
-		x = (int) ((bX * 8) + 25);
-		y = (int) ((bY * 8) + 25);
+    public void updateGraph( float val ) {
+
+	    path = new Path();  	      
+	    //path.addCircle(n, (int)val+100, 5, Path.Direction.CW);
+	    //n += i;
+	    //if ( n >= w - 10 || n <= 10 ) { n = 0; i *= -1; }
+	    /* quasi-simulation */
+	    path.addCircle(n, (float) (h*((Math.sin((double)n/100d)+1d)/2d)), 5, Path.Direction.CW);
+	    n += 1;
+	    if ( n >= w-10 ) { n = 0; }
+	    if ( pathArray.size() >= 100 ) {
+	    	pathArray.remove(0);
+	    }
+	    pathArray.add(path);
 		invalidate();
-	}*/
+	}
 }
