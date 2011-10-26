@@ -32,7 +32,6 @@ public class Magnetometer {
     public long i = 0;
     public long delay = 0;
     DataItem B = new DataItem();
-    int samples = 10;
 
     public Magnetometer(Context context, DataItem dataB) {
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
