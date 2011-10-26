@@ -84,6 +84,12 @@
     android:editable="false"
     android:singleLine="true"
     />
+<CheckBox
+    android:id="@+id/logData_cb"
+    android:text="Log Data"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+/>
 </LinearLayout>
 
  <com.funellites.iTesa.GraphView

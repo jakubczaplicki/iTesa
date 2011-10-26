@@ -17,7 +17,9 @@
 package com.funellites.iTesa;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -27,8 +29,12 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
+import android.view.View.OnClickListener;
+import android.widget.CheckBox;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements Magnetometer.Callback {
 
@@ -40,6 +46,8 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     protected TextView avgBTextView;
     protected TextView maxBTextView;
     protected TextView iTextView;
+    protected CheckBox logData_cb;
+    AlertDialog alertDialog;
 
     DataItem B = new DataItem();
     Magnetometer magnetometer = null;
@@ -48,20 +56,21 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 	static final private int MENU_PREFERENCES = Menu.FIRST; 	
 	private static final int SHOW_PREFERENCES = 1;
 	int updateFreq = 50;  // ms
-    
-    // DBAdapter dbAdapter; // TODO: enable DB
+
+	boolean logData = false;
+    DBAdapter dbAdapter; // TODO: enable DB
 	
 	/** Called when the activity is first created. */	
     @Override
     public void onCreate(Bundle savedInstanceState) {
-    	Log.d("iTesa", "MainActivity:onCreate()");
+    	Log.d("iTesa",this.getClass().getName()+":onCreate()");
     	super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
         updateFromPreferences(); // load and set preferences
 
-        // dbAdapter = new DBAdapter(this); // create/open Database
-        // dbAdapter.open();                // TODO: Enable database
+        dbAdapter = new DBAdapter(this); // create/open Database
+        dbAdapter.open();                // TODO: Enable database
 
         tBTextView = (TextView) findViewById(R.id.tB);
         xBTextView = (TextView) findViewById(R.id.xB);
@@ -72,7 +81,16 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         maxBTextView = (TextView) findViewById(R.id.maxB);
         iTextView = (TextView) findViewById(R.id.iB);
         graphView = (GraphView)this.findViewById(R.id.XYPlot);
+        logData_cb = (CheckBox) findViewById(R.id.logData_cb);
 
+        logData_cb.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+            	logData = !logData;
+            	Toast.makeText(getBaseContext(), "Logging state changed", Toast.LENGTH_SHORT).show();
+            }
+        });
+        
+        
         magnetometer = new Magnetometer( this , this, B );
 
         makeThread(); //start a thread to refresh UI
@@ -119,7 +137,19 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     	
     	magnetometer.close(); // unregister magnetometer listener
 
-        // dbAdapter.close(); // close the database TODO: Enable database
+        dbAdapter.close(); // close the database TODO: Enable database
+    }
+    
+    public void onClick() {
+    if ( logData_cb.isChecked() )
+        alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.setTitle("About Barnsley Fern");
+        alertDialog.setMessage("Test ");
+        alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+	            return;
+	         } });
+	    alertDialog.show();
     }
     
     private long tmpBt = 0;
@@ -159,8 +189,10 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         avgBTextView.invalidate();
         maxBTextView.invalidate();
         iTextView.invalidate();
-    	      
-        // dbAdapter.insertData(B); // store data in sqlite db (returns long row) TODO: Enable database
+
+		if (logData) {
+            dbAdapter.insertData(B); // store data in sqlite db (returns long row) TODO: Enable database
+        }
 	}
 
 	/** Updates the graph on the UI. */	
