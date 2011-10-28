@@ -22,6 +22,15 @@
     android:singleLine="true"
     />    
 <TextView  
+    android:id="@+id/nB"
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content"
+    android:textStyle="bold"
+    android:textSize="16sp"
+    android:editable="false"
+    android:singleLine="true"
+    />
+<TextView  
     android:id="@+id/xB"
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content"

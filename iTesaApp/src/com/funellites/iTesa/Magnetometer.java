@@ -30,20 +30,22 @@ public class Magnetometer {
 	private SensorManager sensorManager = null;
     private Magnetometer.Callback cb = null;
     public long i = 0;
+    private long n = 0;
     public long delay = 0;
     DataItem B = new DataItem();
 
-    public Magnetometer(Context context, DataItem dataB) {
-        sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+   /* public Magnetometer(Context context, DataItem dataB) {
+        this.B = dataB;
+
+    	sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         sensorManager.registerListener( sensorEventListener,
         		sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
         		SensorManager.SENSOR_DELAY_FASTEST);
-        this.B = dataB;
-    }
+    }*/
     
-    public Magnetometer(Context context,Magnetometer.Callback cb, DataItem dataB) {
-    	this.cb = cb;
+    public Magnetometer(Context context, DataItem dataB, Magnetometer.Callback cb) {
     	this.B  = dataB;
+    	this.cb = cb;
 
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         sensorManager.registerListener( sensorEventListener,
@@ -60,35 +62,38 @@ public class Magnetometer {
         
         public void onSensorChanged(SensorEvent event) {
         	synchronized (this) {
-        		switch (event.sensor.getType()){ 
+        		switch (event.sensor.getType()) { 
         		case Sensor.TYPE_MAGNETIC_FIELD:
         			i++;
+        			n++;
         			TimeNew = java.lang.System.currentTimeMillis();
         			delay = TimeNew - TimeOld;
         			TimeOld = TimeNew;
-                    B.add(event.timestamp,
-			              event.values[0], 
-			              event.values[1],
-			              event.values[2] );
-                    cb.updateData( B );
+                    B.add(n,
+                          event.timestamp,
+                          event.values[0], 
+                          event.values[1],
+                          event.values[2] );
+                    if ( ( n % 500 ) == 0 ) {
+                       Log.d("iTesa", "onSensorChanged()");
+                       cb.storeData();
+                    }
         			break;
                 }
         	}
         }
     };
-    
+
     public void close() {
-    	Log.d("iTesa", "Magnetometer.close() - unregister magnetometer listener");
-    	sensorManager.unregisterListener(sensorEventListener,
-        		sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
+        Log.d("iTesa", "Magnetometer.close() - unregister magnetometer listener");
+        sensorManager.unregisterListener(sensorEventListener,
+        	    sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
     }
-    
-    
+
     public interface Callback {
-    	/* We probably don't need to use callback. Adding elements to a queue
-    	 * or an array and then accessing this queue/array from the MainActivity
-    	 * would probably be good enough. But who am I to say ? :)
-    	 */;
-        void updateData(DataItem B);
+    	// Callback to store data. Add message to the main thread to get the data from 
+    	// DataItem and save it to either sqlite or CSV file without slowing down
+    	// data acquisition
+        void storeData();
     }
 }

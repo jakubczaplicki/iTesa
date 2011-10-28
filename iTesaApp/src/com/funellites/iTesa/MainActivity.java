@@ -38,8 +38,9 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity implements Magnetometer.Callback {
 
-    protected TextView tBTextView;
-    protected TextView xBTextView;
+	protected TextView tBTextView;
+	protected TextView nBTextView;
+	protected TextView xBTextView;
     protected TextView yBTextView;
     protected TextView zBTextView;
     protected TextView absBTextView;
@@ -58,8 +59,10 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 	int updateFreq = 50;  // ms
 
 	boolean logData = false;
-    DBAdapter dbAdapter; // TODO: enable DB
-	
+    
+	DBAdapter dbAdapter = null; // TODO: enable DB
+	// CsvFileAdapter csvFile = null;
+
 	/** Called when the activity is first created. */	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -69,10 +72,11 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 
         updateFromPreferences(); // load and set preferences
 
-        dbAdapter = new DBAdapter(this); // create/open Database
-        dbAdapter.open();                // TODO: Enable database
+        dbAdapter = new DBAdapter(this); // new DB adapter
+        //csvFile   = new CsvFileAdapter();
 
         tBTextView = (TextView) findViewById(R.id.tB);
+        nBTextView = (TextView) findViewById(R.id.nB);
         xBTextView = (TextView) findViewById(R.id.xB);
         yBTextView = (TextView) findViewById(R.id.yB);
         zBTextView = (TextView) findViewById(R.id.zB);
@@ -85,13 +89,14 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 
         logData_cb.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
+                dbAdapter.open();                // TODO: Enable database
+            	
             	logData = !logData;
             	Toast.makeText(getBaseContext(), "Logging state changed", Toast.LENGTH_SHORT).show();
             }
         });
         
-        
-        magnetometer = new Magnetometer( this , this, B );
+        magnetometer = new Magnetometer( this, B, this );
 
         makeThread(); //start a thread to refresh UI
 
@@ -139,25 +144,15 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 
         dbAdapter.close(); // close the database TODO: Enable database
     }
-    
-    public void onClick() {
-    if ( logData_cb.isChecked() )
-        alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle("About Barnsley Fern");
-        alertDialog.setMessage("Test ");
-        alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-	            return;
-	         } });
-	    alertDialog.show();
-    }
-    
+
     private long tmpBt = 0;
 
     /** Updates the text fields on the UI. */	
 	private void updateGUI() {
         String str = "t: " + B.t + " ns";
         tBTextView.setText(str);
+        str = "n: " + B.n;
+        nBTextView.setText(str);
         str = "x: " + B.x + " µT";
         xBTextView.setText(str);
         str = "y: " + B.y + " µT";
@@ -189,10 +184,6 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         avgBTextView.invalidate();
         maxBTextView.invalidate();
         iTextView.invalidate();
-
-		if (logData) {
-            dbAdapter.insertData(B); // store data in sqlite db (returns long row) TODO: Enable database
-        }
 	}
 
 	/** Updates the graph on the UI. */	
@@ -200,20 +191,33 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 	    //graphView.x = (int)(B.x);
 	    //graphView.y = (int)(B.y);
 	    //graphView.z = (int)(B.z);
-	    graphView.updateGraph( B.sma );
+	    graphView.updateGraph( magnetometer.B.sma );
+	}
+	
+	/** Store data in csv file */	
+	private void storeDataCsvFile() {
+		
+	}
+	
+	/** Store data in sqlite database */	
+	private void storeDataSqlite(){
+		Toast.makeText(getBaseContext(), "storeDataSqlite()", Toast.LENGTH_SHORT).show();
+		if (logData) {
+            dbAdapter.insertData(B); // store data in sqlite db (returns long row) TODO: Enable database
+        }
 	}
 	
 	/**
 	 * Used by callback from Magnetometer class.
 	 * 
-     * If we still use the Callback, then here would be the place to add data to queue.
-	 * Read the elements from queue for plot in other thread. Does it make sense ?   
-	 * http://developer.android.com/reference/java/util/Queue.html
+     * Add message to the main thread to save the data
 	 */	
 	@Override
-	public void updateData(DataItem _B) {
-		B = _B;
+	public void storeData() {
+        //messageHandler.sendMessage(Message.obtain(messageHandler, 3));
+        messageHandler.sendMessage(Message.obtain(messageHandler, 4));
     }
+
 
 	
 	
@@ -235,12 +239,10 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         @Override
         public void handleMessage(Message msg) {  
             switch(msg.what) {
-	        //handle update
-	        case 1:
-                updateGUI();
-	        case 2:
-	        	updateGraph();
-	        break;
+	           case 1: updateGUI();        break;
+	           case 2: updateGraph();      break;
+	           case 3: storeDataCsvFile(); break;
+	           case 4: storeDataSqlite();  break;
             }
         }   
     };
@@ -259,7 +261,6 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
               //Send update to the main thread
               messageHandler.sendMessage(Message.obtain(messageHandler, 1));
               messageHandler.sendMessage(Message.obtain(messageHandler, 2));
-              
               try {
                  Thread.sleep(updateFreq);
               } catch(Exception e) {

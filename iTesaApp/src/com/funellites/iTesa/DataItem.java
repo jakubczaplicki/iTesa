@@ -21,10 +21,11 @@ public class DataItem {
 	final boolean SMA = true;
 	final boolean WMA = false;
 	
-	long  t;    // timestamp [ns]
-    float x;    // lateral [uT]
-    float y;    // longitudinal [uT]
-    float z;    // vertical [uT]
+	long  n;   // number of sample 	
+	long  t;   // timestamp [ns]
+    float x;   // lateral [uT]
+    float y;   // longitudinal [uT]
+    float z;   // vertical [uT]
     float abs; // absolute B [uT]
     float max; // max B [uT]
     float min; // min B [uT]
@@ -48,8 +49,9 @@ public class DataItem {
     	setAvg(size);
     }
     
-    public void add(long t, float x,float y,float z) {
-        this.t    = t;
+    public void add(long i, long t, float x,float y,float z) {
+        this.n    = i;
+    	this.t    = t;
         this.x    = x;
         this.y    = y;
         this.z    = z;
@@ -85,7 +87,6 @@ public class DataItem {
             if (++index == size) index = 0;
     	}
     	else if (WMA){ /* Weight Moving Average */
-    		
     	}
     }
 
