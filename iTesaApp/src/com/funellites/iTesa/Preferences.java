@@ -23,6 +23,7 @@ import android.preference.PreferenceActivity;
 public class Preferences extends PreferenceActivity {
 
   public static final String PREF_UPDATE_FREQ = "PREF_UPDATE_FREQ";
+  public static final String PREF_STORE_FREQ = "PREF_STORE_FREQ";
 
   SharedPreferences prefs;
 

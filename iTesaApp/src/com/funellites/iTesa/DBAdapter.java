@@ -28,16 +28,18 @@ import android.util.Log;
 
 public class DBAdapter {
 
-	private static final int    DB_VERSION      = 1;
-	private static final String DB_NAME         = "itesadb.sqlite";
-	private static final String DB_TABLE        = "magneticfield";
+	private static final int    DB_VERSION = 1;
+	private static final String DB_NAME    = "itesadb.sqlite";
+	private static final String DB_TABLE   = "magneticfield";
 	public static final String KEY_ID      = "_id";
-	//public static final String KEY_LAT     = "lat";
-	//public static final String KEY_LNG     = "lng";
+	public static final String KEY_LAT     = "lat";
+	public static final String KEY_LNG     = "lng";
 	public static final String KEY_TIME    = "time";
 	public static final String KEY_XB      = "xB";
 	public static final String KEY_YB      = "yB";
 	public static final String KEY_ZB      = "zB";
+	
+	public boolean isOpen = false;
 
 	private SQLiteDatabase db;
 	private final Context context;
@@ -58,6 +60,7 @@ public class DBAdapter {
 		} catch (SQLiteException ex) {
 			db = dbHelper.getReadableDatabase();
 		}
+		isOpen = true;
 	}
 	
 	public long insertData(DataItem _data) {
@@ -98,7 +101,7 @@ public class DBAdapter {
           float zB = cursor.getFloat(cursor.getColumnIndex(KEY_ZB));
           DataItem result = new DataItem(time, xB, yB, zB);
           return result;
-        }    	
+        }
 
 	
 	/*** Helper ***/
