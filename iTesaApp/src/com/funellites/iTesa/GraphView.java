@@ -88,7 +88,7 @@ public class GraphView extends View {
 
     	if (firstRun) {      // I know it's bad, but I don't know when to get view size. Putting getWidth
             h = getHeight(); // and getHeight inside initGraphView() returns zero. Width and height are 
-            w = getWidth();  // not defined until the view is actually rendered to the screen. 
+            w = (int)(((double)getWidth())*0.9d);  // not defined until the view is actually rendered to the screen. 
                              // But when does it happen ?
             mBackgroundImage = Bitmap.createScaledBitmap(mBackgroundImage, w, h, true); //resize background
             firstRun = false;

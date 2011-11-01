@@ -159,13 +159,13 @@ public class MainActivity extends Activity {
 
     /** Updates the text fields on the UI. */	
 	private void updateGUI() {
-        tBTextView.setText("t: " + B.t + " ns");
+        tBTextView.setText("t: " + B.t/1000000 + " ms  ");
         nBTextView.setText("n: " + B.n);
         xBTextView.setText("x: " + B.x + " µT");
         yBTextView.setText("y: " + B.y + " µT");
         zBTextView.setText("z: " + B.z + " µT");
         absBTextView.setText("abs: " + B.abs + " µT");
-        avgBTextView.setText("avg(100): " + B.sma + " µT");
+        avgBTextView.setText("avg: " + B.sma + " µT");
         maxBTextView.setText("max: " + B.max + " µT");
         // I don't understand this number !! why is it ~53 ms ?
         // see http://stackoverflow.com/questions/5060628/android-sensor-delay-fastest-isnt-fast-enough

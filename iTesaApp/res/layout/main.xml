@@ -18,8 +18,8 @@
     android:layout_width="wrap_content" 
     android:layout_height="wrap_content"
     android:textStyle="bold"
-    android:textSize="14sp"
-    android:editable="false"
+    android:textSize="16sp"
+    android:editable="true"
     android:singleLine="true"
     />    
 <TextView  
@@ -106,7 +106,7 @@
     android:id="@+id/XYPlot"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:layout_toLeftOf="@id/linear"
+    android:layout_toRightOf="@id/linear"
     title="XYPlot"/>
 
 </RelativeLayout>

@@ -31,7 +31,7 @@ public class CsvFileAdapter {
            root.mkdirs();
        }
        Log.d("iTesa", "CsvFileAdapter: " + root + " " + getDateTime() + fileName);
-       fileName += getDateTime(); 
+       fileName = getDateTime() + "_" + fileName; 
        file = new File(root, fileName);
    }
    
