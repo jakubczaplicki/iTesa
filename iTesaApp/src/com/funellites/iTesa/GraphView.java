@@ -40,7 +40,7 @@ public class GraphView extends View {
     private Path path;                // http://developer.android.com/reference/android/graphics/Path.html
     private Bitmap mBackgroundImage;  // background image
     private int h = 100, w = 100;     // initial view width and height
-    private int i = 5, n = 10;        // variables for point plotting functionality
+    private int i = 5, n = 10, m = 0; // variables for point plotting functionality
     
     public GraphView(Context context) {
         super(context);
@@ -115,9 +115,10 @@ public class GraphView extends View {
 	    //n += i;
 	    //if ( n >= w - 10 || n <= 10 ) { n = 0; i *= -1; }
 	    /* quasi-simulation */
-	    path.addCircle(n, (float) (h*((Math.sin((double)n/100d)+1d)/2d)), 5, Path.Direction.CW);
+	    path.addCircle(n, (float) (h*((Math.sin(m+(double)n/100d)+1d)/2d)), 5, Path.Direction.CW);
 	    n += 1;
-	    if ( n >= w-10 ) { n = 0; }
+	    if ( n >= w-10 ) { n = 0; m += 1; }
+	    if ( m > 10 ) { m = -10; }
 	    if ( pathArray.size() >= 400 ) {
 	    	pathArray.remove(0);
 	    }

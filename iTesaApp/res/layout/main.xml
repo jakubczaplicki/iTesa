@@ -14,10 +14,11 @@
     >
 <TextView  
     android:id="@+id/tB"
+    android:text="-------------------------"
     android:layout_width="wrap_content" 
     android:layout_height="wrap_content"
     android:textStyle="bold"
-    android:textSize="16sp"
+    android:textSize="14sp"
     android:editable="false"
     android:singleLine="true"
     />    
@@ -101,11 +102,11 @@
 />
 </LinearLayout>
 
- <com.funellites.iTesa.GraphView
+<com.funellites.iTesa.GraphView
     android:id="@+id/XYPlot"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-	android:layout_toRightOf="@id/linear"
+    android:layout_toLeftOf="@id/linear"
     title="XYPlot"/>
 
 </RelativeLayout>

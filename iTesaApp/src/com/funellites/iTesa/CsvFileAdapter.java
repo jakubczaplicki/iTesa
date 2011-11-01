@@ -1,25 +1,28 @@
 package com.funellites.iTesa;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import android.database.sqlite.SQLiteException;
 import android.os.Environment;
-import android.text.format.DateFormat;
 import android.util.Log;
 
 public class CsvFileAdapter {
   
-   FileWriter writer;
-   File file;
+   private BufferedWriter writer;
+   private File file;
+   public boolean isOpen = false;
 
-   private  final static String getDateTime()  
+   private final static String getDateTime()  
    {  
-       SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_hhmmss");  
-       return df.format(new Date());  
+	   Format formatter = new SimpleDateFormat("yyyyMMdd_hhmmss");
+	   Date date = new Date();
+       return formatter.format(date);  
    } 
    
    public CsvFileAdapter(String fileName) {
@@ -28,43 +31,39 @@ public class CsvFileAdapter {
            root.mkdirs();
        }
        Log.d("iTesa", "CsvFileAdapter: " + root + " " + getDateTime() + fileName);
+       fileName += getDateTime(); 
        file = new File(root, fileName);
    }
    
-   public void open() throws SQLiteException {
-      try {
-  		Log.d("iTesa", "CsvFileAdapter.open()");
-		writer = new FileWriter(file ,true);
-	} catch (IOException e) {
-		e.printStackTrace();
-	}
-   }
-
-   public void close() {
-		try {
-			Log.d("iTesa", "CsvFileAdapter.close()");
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-  public void write(DataItem _data) {
-     try {
-    	 Log.d("iTesa", "CsvFileAdapter.write()");
-    	 writer.write(String.valueOf(_data.t));
-    	 writer.write(",");
-    	 writer.write(String.valueOf(_data.x));
-    	 writer.write(",");
-    	 writer.write(String.valueOf(_data.y));
-    	 writer.write(",");
-    	 writer.write(String.valueOf(_data.z));
-    	 writer.write(",");
-    	 writer.write(String.valueOf(_data.n));
-    	 writer.write(System.getProperty("line.separator"));
-         writer.flush();
+    public void open() {
+    try {
+        Log.d("iTesa", "CsvFileAdapter.open()");
+        writer = new BufferedWriter(new OutputStreamWriter(
+            new FileOutputStream(file, true)));
+        isOpen = true;
     } catch (IOException e) {
-      e.printStackTrace();
+        e.printStackTrace();
+        }
     }
-  }
+
+    public void close() {
+        try {
+            Log.d("iTesa", "CsvFileAdapter.close()");
+            writer.close();
+            isOpen = false;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void write(DataItem d) {
+        try {
+            Log.d("iTesa", "CsvFileAdapter.write()");
+            writer.append(d.t + "," + d.x + "," + d.y + "," + d.z + "," + d.n);
+            writer.newLine();
+            writer.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

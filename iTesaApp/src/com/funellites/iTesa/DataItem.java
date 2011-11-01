@@ -18,8 +18,6 @@ package com.funellites.iTesa;
 
 import java.util.ArrayList;
 
-import android.util.Log;
-
 public class DataItem {
 
 	final boolean SMA = true;
@@ -65,12 +63,12 @@ public class DataItem {
         this.y    = y;
         this.z    = z;
     	this.abs = Math.round( Math.sqrt(x*x+y*y+z*z) );
-    	/*this.addAvg(this.abs);
+    	this.addAvg(this.abs);
     	this.sma = this.getAvg();
 	    if (this.abs > this.max)
-            this.max = this.abs;*/
+            this.max = this.abs;
 	    dataArray.add(this);
-		Log.d("iTesa", "DataItem.add() added element " + dataArray.size());
+		/*Log.d("iTesa", "DataItem.add() added element " + dataArray.size());*/
     }
 
     @SuppressWarnings("unchecked")

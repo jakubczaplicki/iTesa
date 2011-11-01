@@ -10,6 +10,16 @@
      android:entries="@array/update_freq_options"
      android:entryValues="@array/update_freq_values"
      android:dialogTitle="Refresh frequency"
+     android:defaultValue="1000"
+    />
+    <ListPreference
+     android:key="PREF_STORE_FREQ"
+     android:title="Data store frequency"
+     android:summary="Frequency at which to store the data"
+     android:entries="@array/store_freq_options"
+     android:entryValues="@array/store_freq_values"
+     android:dialogTitle="Refresh frequency"
      android:defaultValue="500"
     />
+
 </PreferenceScreen>

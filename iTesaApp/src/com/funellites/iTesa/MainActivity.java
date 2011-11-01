@@ -37,7 +37,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements Magnetometer.Callback {
+public class MainActivity extends Activity {
 
 	protected TextView tBTextView;
 	protected TextView nBTextView;
@@ -56,7 +56,8 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     
 	static final private int MENU_PREFERENCES = Menu.FIRST; 	
 	private static final int SHOW_PREFERENCES = 1;
-	private int updateFreq = 50;  // ms
+	private int updateFreq = 1000;  // ms
+	private int storeFreq  = 500;   // ms
     private boolean logData = false;
 	private DBAdapter      dbAdapter      = null; // TODO: database
 	private CsvFileAdapter csvFileAdapter = null;
@@ -73,17 +74,17 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         dbAdapter      = new DBAdapter(this); // TODO: database
         csvFileAdapter = new CsvFileAdapter("iTesa.csv");
 
-        tBTextView = (TextView) findViewById(R.id.tB);
-        nBTextView = (TextView) findViewById(R.id.nB);
-        xBTextView = (TextView) findViewById(R.id.xB);
-        yBTextView = (TextView) findViewById(R.id.yB);
-        zBTextView = (TextView) findViewById(R.id.zB);
+        tBTextView   = (TextView) findViewById(R.id.tB);
+        nBTextView   = (TextView) findViewById(R.id.nB);
+        xBTextView   = (TextView) findViewById(R.id.xB);
+        yBTextView   = (TextView) findViewById(R.id.yB);
+        zBTextView   = (TextView) findViewById(R.id.zB);
         absBTextView = (TextView) findViewById(R.id.absB);
         avgBTextView = (TextView) findViewById(R.id.avgB);
         maxBTextView = (TextView) findViewById(R.id.maxB);
-        iTextView = (TextView) findViewById(R.id.iB);
-        graphView = (GraphView)this.findViewById(R.id.XYPlot);
-        logData_cb = (CheckBox) findViewById(R.id.logData_cb);
+        iTextView    = (TextView) findViewById(R.id.iB);
+        graphView    = (GraphView)this.findViewById(R.id.XYPlot);
+        logData_cb   = (CheckBox) findViewById(R.id.logData_cb);
 
         logData_cb.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
@@ -95,7 +96,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
             }
         });
         
-        magnetometer = new Magnetometer( this, B, this );
+        magnetometer = new Magnetometer( this, B );
 
         makeThread(); // start a thread to refresh UI
         makeTimer();  // start timer to store data in regular intervals
@@ -142,6 +143,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 
         // stop the timer
 		t.cancel();
+		Log.d("iTesa", "Cancel tasks : " + t.purge());
 		
 		// unregister magnetometer listener
     	magnetometer.close();
@@ -150,8 +152,9 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     	if ( dbAdapter.isOpen ) {
     	    dbAdapter.close(); // TODO: database
         }
-    	
+    	if ( csvFileAdapter.isOpen ) {
     	csvFileAdapter.close();
+    	}
     }
 
     /** Updates the text fields on the UI. */	
@@ -185,8 +188,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 	
 	/** Store data in csv file */	
 	private void storeDataCsvFile() {
-        Toast.makeText(getBaseContext(), "storeDataCsv()", Toast.LENGTH_SHORT).show();
-		Log.d("iTesa", "" + System.currentTimeMillis() );
+        //Toast.makeText(getBaseContext(), "storeDataCsv()", Toast.LENGTH_SHORT).show();
 		if (logData) {
 		    csvFileAdapter.write(B.getAverage());
 		}
@@ -194,22 +196,10 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 	
 	/** Store data in sqlite database */	
 	private void storeDataSqlite(){
-		Toast.makeText(getBaseContext(), "storeDataSqlite()", Toast.LENGTH_SHORT).show();
-		Log.d("iTesa", "" + System.currentTimeMillis() );
 		if (logData) {
             dbAdapter.insertData(B); // store data in sqlite db (returns long row) TODO: database
         }
 	}
-	
-	/**
-	 * Used by callback from Magnetometer class.
-	 * 
-     * Add message to the main thread to save the data
-	 */
-	/*@Override
-	public void storeData() {
-		msgGuiHandler.sendMessage(Message.obtain(msgDataHandler, 4));
-    }*/
 
     /*************************************************************************
 	 * Thread functionality
@@ -220,7 +210,8 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 	/** Instantiating Handler associated with the GUI thread */
     private Handler msgGuiHandler = new Handler() {
         @Override
-        public void handleMessage(Message msg) {  
+        public void handleMessage(Message msg) { 
+        	Log.d("iTesa", "msgGuiHandler " + System.currentTimeMillis() );
             switch(msg.what) {
 	           case 1: updateGUI();        break;
 	           case 2: updateGraph();      break;
@@ -238,7 +229,8 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 	/** Instantiating Handler associated with the data thread */
     private Handler msgDataHandler = new Handler() {
         @Override
-        public void handleMessage(Message msg) {  
+        public void handleMessage(Message msg) {
+        	Log.d("iTesa", "msgDataHandler " + System.currentTimeMillis() );
             switch(msg.what) {
 	           case 1: storeDataCsvFile(); break;
 	           case 2: storeDataSqlite();  break;
@@ -308,6 +300,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         Context context = getApplicationContext();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         updateFreq = Integer.parseInt(prefs.getString(Preferences.PREF_UPDATE_FREQ, "1000"));
-        //magnetometer.samples( Integer.parseInt(prefs.getString(Preferences.PREF_STORE_FREQ, "10")) );
+        storeFreq  = Integer.parseInt(prefs.getString(Preferences.PREF_STORE_FREQ, "500"));
+        // TODO: use the storeFreq param in the timer - requires restarting timer
     };
 }

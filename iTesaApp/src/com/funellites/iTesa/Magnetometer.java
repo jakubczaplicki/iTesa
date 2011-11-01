@@ -28,15 +28,13 @@ import android.util.Log;
 /** All values are in micro-Tesla (uT) and measure the ambient magnetic field in the X, Y and Z axis. */ 
 public class Magnetometer {
 	private SensorManager sensorManager = null;
-    private Magnetometer.Callback cb    = null;
     public  long i = 0;
     private long n = 0;
     public  long delay = 0;
     DataItem B = null;
 
-    public Magnetometer(Context context, DataItem dataB, Magnetometer.Callback cb) {
+    public Magnetometer(Context context, DataItem dataB) {
     	this.B  = dataB;
-    	this.cb = cb;
 
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         sensorManager.registerListener( sensorEventListener,
@@ -65,11 +63,8 @@ public class Magnetometer {
 
         			TimeNew = event.timestamp;
         			delay = (long)((TimeNew - TimeOld)/1000000);
-                    /*if ( ( n % 10 ) == 0 ) {
-        			   TimeOld = TimeNew;
-                       Log.d("iTesa", "onSensorChanged(): " + delay + " ms");
-                       cb.storeData();
-                    }*/
+        			TimeOld = TimeNew;
+
         			break;
                 }
         	}
@@ -80,12 +75,5 @@ public class Magnetometer {
         Log.d("iTesa", "Magnetometer.close() - unregister magnetometer listener");
         sensorManager.unregisterListener(sensorEventListener,
         	    sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
-    }
-
-    public interface Callback {
-    	// Callback to store data. Add message to the main thread to get the data from 
-    	// DataItem and save it to either sqlite or CSV file without slowing down
-    	// data acquisition
-        //void storeData();
     }
 }
