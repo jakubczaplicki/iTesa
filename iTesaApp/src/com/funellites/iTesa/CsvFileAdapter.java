@@ -73,8 +73,10 @@ public class CsvFileAdapter {
                     writer.flush();
                 lastLog = time;
         	}
-        } catch (IOException e) {
-            e.printStackTrace();
+    	}
+        catch (IOException e) {
+            Log.e("iTesa", "IOException in append()", e);
         }
+
     }
 }

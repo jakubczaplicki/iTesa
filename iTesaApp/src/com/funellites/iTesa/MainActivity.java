@@ -37,7 +37,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements Magnetometer.Callback {
 
 	protected TextView tBTextView;
 	protected TextView nBTextView;
@@ -94,7 +94,7 @@ public class MainActivity extends Activity {
             }
         });
         
-        magnetometer = new Magnetometer( this, B );
+        magnetometer = new Magnetometer( this, this );
 
         makeThread(); // start a thread to refresh UI
 
@@ -157,6 +157,11 @@ public class MainActivity extends Activity {
     	B.logFileClose();
     }
 
+    /** Callback function */
+    public void addData( long n, long t, float bx, float by, float bz ) {
+    	B.add(n, t, bx, by, bz );
+    }
+    
     /** Updates the text fields on the UI. */	
 	private void updateGUI() {
         tBTextView.setText("t: " + B.t/1000000 + " ms  ");

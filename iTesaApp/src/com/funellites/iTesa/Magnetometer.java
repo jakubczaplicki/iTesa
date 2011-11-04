@@ -16,8 +16,6 @@
 
 package com.funellites.iTesa;
 
-import com.funellites.iTesa.DataItem;
-
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -28,14 +26,13 @@ import android.util.Log;
 /** All values are in micro-Tesla (uT) and measure the ambient magnetic field in the X, Y and Z axis. */ 
 public class Magnetometer {
 	private SensorManager sensorManager = null;
+    private Magnetometer.Callback cb = null;
     public  long i = 0;
     private long n = 0;
     public  long delay = 0;
-    DataItem B = null;
 
-    public Magnetometer(Context context, DataItem dataB) {
-    	this.B  = dataB;
-
+    public Magnetometer(Context context, Magnetometer.Callback cb) {
+    	this.cb=cb;
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         sensorManager.registerListener( sensorEventListener,
         		sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
@@ -56,11 +53,13 @@ public class Magnetometer {
         			if ( n >= Long.MAX_VALUE - 1 ) { n = 0; }
         			n++;
 
-        			B.add(n,
-                          event.timestamp,
-                          event.values[0], 
-                          event.values[1],
-                          event.values[2] );
+        	    	if (cb!=null) {
+                        cb.addData( n,
+                                event.timestamp,
+                                event.values[0], 
+                                event.values[1],
+                                event.values[2] );
+        	    	}
 
         			TimeNew = event.timestamp;
         			delay = (long)((TimeNew - TimeOld)/1000000);
@@ -76,5 +75,9 @@ public class Magnetometer {
         Log.d("iTesa", "Magnetometer.close() - unregister magnetometer listener");
         sensorManager.unregisterListener(sensorEventListener,
         	    sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
+    }
+    
+    public interface Callback {
+		   void addData(long n, long t, float bx, float by, float bz);
     }
 }

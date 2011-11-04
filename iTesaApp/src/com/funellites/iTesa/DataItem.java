@@ -51,7 +51,7 @@ public class DataItem {
     
     public DataItem() {
     	setAvg(size);
-    	dataArray = new ArrayList<DataItem>(); 
+    	this.dataArray = new ArrayList<DataItem>(); 
     }
 
     public DataItem(long _time, float _xB, float _yB, float _zB) {
@@ -76,6 +76,8 @@ public class DataItem {
             this.max = this.abs;
 	    
 	    this.dataArray.add(this);
+	    
+	    //csvFileAdapter.write( this );
 	    
 	    /*if ( this.dataArray.size()  > 10 )
 	    {
