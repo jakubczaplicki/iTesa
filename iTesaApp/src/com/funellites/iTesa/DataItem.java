@@ -17,13 +17,18 @@
 package com.funellites.iTesa;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+
+import android.util.Log;
 
 public class DataItem {
 
+	CsvFileAdapter csvFileAdapter = null;
+	
 	final boolean SMA = true;
 	final boolean WMA = false;
 	
-	private ArrayList<DataItem> dataArray = new ArrayList<DataItem>(); // array of data
+	private ArrayList<DataItem> dataArray = null; // array of data
 	
 	long  n;    // sample number 	
 	long  t;    // timestamp [ns]
@@ -46,14 +51,16 @@ public class DataItem {
     
     public DataItem() {
     	setAvg(size);
+    	dataArray = new ArrayList<DataItem>(); 
     }
 
     public DataItem(long _time, float _xB, float _yB, float _zB) {
-        t = _time;
-        x = _xB;
-        y = _yB;
-        z = _zB;
+        this.t = _time;
+        this.x = _xB;
+        this.y = _yB;
+        this.z = _zB;
     	setAvg(size);
+    	this.dataArray = new ArrayList<DataItem>();
     }
     
     public void add(long i, long t, float x,float y,float z) {
@@ -67,8 +74,37 @@ public class DataItem {
     	this.sma = this.getAvg();
 	    if (this.abs > this.max)
             this.max = this.abs;
-	    dataArray.add(this);
-		/*Log.d("iTesa", "DataItem.add() added element " + dataArray.size());*/
+	    
+	    this.dataArray.add(this);
+	    
+	    /*if ( this.dataArray.size()  > 10 )
+	    {
+		   for (int k = 0; k < this.dataArray.size() ; k++) {
+		       Log.d("iTesa", "k: " + k + " B.n: " + this.dataArray.remove(0).n);
+		   }
+	    }*/
+	    
+	    /*
+	    if ( this.dataArray.size() > 10 ) {
+	    //Log.d("iTesa", "i: " + i + " B.n: " + this.n);
+    	//Log.d("iTesa", "i: " + i + " B.n: " + this.dataArray.get(size).n);
+    	
+	    	Log.d("iTesa", "size: " + this.dataArray.size() );
+    	Log.d("iTesa", "i: " + i + " B.n: " + this.dataArray.get(this.dataArray.size()-1).n);
+    	Log.d("iTesa", "i: " + i + " B.n: " + this.dataArray.remove(this.dataArray.size()-1).n);
+    	Log.d("iTesa", "i: " + i + " B.n: " + this.dataArray.get(this.dataArray.size()-2).n);
+    	Log.d("iTesa", "i: " + i + " B.n: " + this.dataArray.remove(this.dataArray.size()-2).n);
+    	Log.d("iTesa", "i: " + i + " B.n: " + this.dataArray.get(this.dataArray.size()-3).n);
+    	Log.d("iTesa", "i: " + i + " B.n: " + this.dataArray.remove(this.dataArray.size()-3).n);
+    	Log.d("iTesa", "i: " + i + " B.n: " + this.dataArray.get(0).n);
+    	Log.d("iTesa", "i: " + i + " B.n: " + this.dataArray.remove(0).n);
+    	Log.d("iTesa", "size: " + this.dataArray.size() );
+    	Log.d("iTesa", "i: " + i + " B.n: " + this.dataArray.remove(this.dataArray.size()-1).n);
+    	Log.d("iTesa", "size: " + this.dataArray.size() );
+    	Log.d("iTesa", "i: " + i + " B.n: " + this.dataArray.remove(this.dataArray.size()-1).n);
+    	Log.d("iTesa", "size: " + this.dataArray.size() );
+    	//Log.d("iTesa", "size: " + this.dataArray.size() );
+	    }*/
     }
 
     @SuppressWarnings("unchecked")
@@ -123,4 +159,27 @@ public class DataItem {
     public float getAvg() {
         return total / size;
     }
+    
+    public void logFileOpen() {
+    	csvFileAdapter = new CsvFileAdapter("iTesa.csv");
+    	csvFileAdapter.open();
+    }
+
+    public void logFileClose() {
+    	if ( csvFileAdapter.isOpen ) {
+        	csvFileAdapter.close();
+        	}
+    }
+    
+    @SuppressWarnings("unchecked")
+	public void logFileSave() {
+        ArrayList<DataItem>  _dataArray = (ArrayList<DataItem>) dataArray.clone();
+        dataArray.clear();    	
+        Iterator<DataItem> itr = _dataArray.iterator();
+        while(itr.hasNext()) {
+		    Log.d("iTesa", " Bn: " + itr.next().n);
+			//csvFileAdapter.write( itr.next() );
+		}
+    }
+    
 }

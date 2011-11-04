@@ -56,11 +56,10 @@ public class MainActivity extends Activity {
     
 	static final private int MENU_PREFERENCES = Menu.FIRST; 	
 	private static final int SHOW_PREFERENCES = 1;
-	private int updateFreq = 1000;  // ms
-	private int storeFreq  = 500;   // ms
+	private int updateFreq = 3000;  // ms
+	private int saveLogFreq  = 1000;   // ms
     private boolean logData = false;
-	private DBAdapter      dbAdapter      = null; // TODO: database
-	private CsvFileAdapter csvFileAdapter = null;
+	//private DBAdapter      dbAdapter      = null; // TODO: database
 
 	/** Called when the activity is first created. */	
     @Override
@@ -71,8 +70,7 @@ public class MainActivity extends Activity {
 
         updateFromPreferences(); // load and set preferences
 
-        dbAdapter      = new DBAdapter(this); // TODO: database
-        csvFileAdapter = new CsvFileAdapter("iTesa.csv");
+        //dbAdapter      = new DBAdapter(this); // TODO: database
 
         tBTextView   = (TextView) findViewById(R.id.tB);
         nBTextView   = (TextView) findViewById(R.id.nB);
@@ -88,8 +86,8 @@ public class MainActivity extends Activity {
 
         logData_cb.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                dbAdapter.open();      // TODO: database
-                csvFileAdapter.open();
+            	//dbAdapter.open();      // TODO: database
+            	B.logFileOpen();
             	
             	logData = !logData;
             	Toast.makeText(getBaseContext(), "Logging state changed", Toast.LENGTH_SHORT).show();
@@ -99,7 +97,6 @@ public class MainActivity extends Activity {
         magnetometer = new Magnetometer( this, B );
 
         makeThread(); // start a thread to refresh UI
-        makeTimer();  // start timer to store data in regular intervals
 
         getWindow().addFlags( WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
         		              WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
@@ -141,20 +138,23 @@ public class MainActivity extends Activity {
 			e.printStackTrace();
 		}
 
-        // stop the timer
-		t.cancel();
-		Log.d("iTesa", "Cancel tasks : " + t.purge());
+        logThread.threadRunning  = false;
+        try {
+			logThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
 		
 		// unregister magnetometer listener
     	magnetometer.close();
 
     	// close the database 
-    	if ( dbAdapter.isOpen ) {
+    	/*if ( dbAdapter.isOpen ) {
     	    dbAdapter.close(); // TODO: database
-        }
-    	if ( csvFileAdapter.isOpen ) {
-    	csvFileAdapter.close();
-    	}
+        }*/
+    	
+    	B.logFileClose();
     }
 
     /** Updates the text fields on the UI. */	
@@ -190,14 +190,14 @@ public class MainActivity extends Activity {
 	private void storeDataCsvFile() {
         //Toast.makeText(getBaseContext(), "storeDataCsv()", Toast.LENGTH_SHORT).show();
 		if (logData) {
-		    csvFileAdapter.write(B.getAverage());
+			B.logFileSave();
 		}
 	}
 	
 	/** Store data in sqlite database */	
 	private void storeDataSqlite(){
 		if (logData) {
-            dbAdapter.insertData(B); // store data in sqlite db (returns long row) TODO: database
+            //dbAdapter.insertData(B); // store data in sqlite db (returns long row) TODO: database
         }
 	}
 
@@ -206,12 +206,22 @@ public class MainActivity extends Activity {
 	 *************************************************************************/	
 
 	private GuiThread guiThread;
-		
+	private LogThread logThread;
+
+    /** Creates the thread (this method is invoked from onCreate()) */
+	private void makeThread() {
+        Log.d("iTesa", "makeThread()");
+        guiThread = new GuiThread();
+        guiThread.start();
+        logThread = new LogThread();
+        logThread.start();
+	}	
+	
 	/** Instantiating Handler associated with the GUI thread */
     private Handler msgGuiHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) { 
-        	Log.d("iTesa", "msgGuiHandler " + System.currentTimeMillis() );
+        	//Log.d("iTesa", "msgGuiHandler " + System.currentTimeMillis() );
             switch(msg.what) {
 	           case 1: updateGUI();        break;
 	           case 2: updateGraph();      break;
@@ -219,18 +229,11 @@ public class MainActivity extends Activity {
         }
     };
 
-    /** Creates the thread (this method is invoked from onCreate()) */
-	private void makeThread() {
-        Log.d("iTesa", "makeThread()");
-        guiThread = new GuiThread();
-        guiThread.start();
-	}
-
-	/** Instantiating Handler associated with the data thread */
-    private Handler msgDataHandler = new Handler() {
+	/** Instantiating Handler associated with the log file thread */
+    private Handler msgLogHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-        	Log.d("iTesa", "msgDataHandler " + System.currentTimeMillis() );
+        	//Log.d("iTesa", "msgDataHandler " + System.currentTimeMillis() );
             switch(msg.what) {
 	           case 1: storeDataCsvFile(); break;
 	           case 2: storeDataSqlite();  break;
@@ -238,18 +241,23 @@ public class MainActivity extends Activity {
         }
     };
 
-    /** Creates the timer (this method is invoked from onCreate()) */
-    private Timer t;
-	private void makeTimer() {
-		Log.d("iTesa", "makeTimer()");
-        TimerTask saveDataTask;
-        t = new Timer();
-        saveDataTask = new TimerTask() {
-            public void run() {
-            	msgDataHandler.sendMessage(Message.obtain(msgDataHandler, 1));
+    /** Thread class for saving data */
+    class LogThread extends Thread {
+        public boolean threadRunning = true;
+
+        public LogThread() {}
+
+        @Override
+        public void run() {
+            while (threadRunning) {
+              msgLogHandler.sendMessage(Message.obtain(msgLogHandler, 1));
+              try {
+                 Thread.sleep(saveLogFreq);
+              } catch(Exception e) {
+                 e.printStackTrace();
+              }
             }
-        };
-        t.schedule(saveDataTask, 1000, 500);
+        }
     }
 
     /** Thread class for refreshing the UI */
@@ -300,7 +308,7 @@ public class MainActivity extends Activity {
         Context context = getApplicationContext();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         updateFreq = Integer.parseInt(prefs.getString(Preferences.PREF_UPDATE_FREQ, "1000"));
-        storeFreq  = Integer.parseInt(prefs.getString(Preferences.PREF_STORE_FREQ, "500"));
+        saveLogFreq  = Integer.parseInt(prefs.getString(Preferences.PREF_STORE_FREQ, "500"));
         // TODO: use the storeFreq param in the timer - requires restarting timer
     };
 }

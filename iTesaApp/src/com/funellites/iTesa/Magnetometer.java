@@ -53,6 +53,7 @@ public class Magnetometer {
         	synchronized (this) {
         		switch (event.sensor.getType()) { 
         		case Sensor.TYPE_MAGNETIC_FIELD:
+        			if ( n >= Long.MAX_VALUE - 1 ) { n = 0; }
         			n++;
 
         			B.add(n,

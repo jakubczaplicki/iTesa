@@ -18,6 +18,9 @@ public class CsvFileAdapter {
    private File file;
    public boolean isOpen = false;
 
+   public static final long FLUSH_TIME = 60000; // Flush the BufferedWriter every minute
+   private long lastLog = 0;
+   
    private final static String getDateTime()  
    {  
 	   Format formatter = new SimpleDateFormat("yyyyMMdd_hhmmss");
@@ -57,11 +60,19 @@ public class CsvFileAdapter {
     }
 
     public void write(DataItem d) {
-        try {
-            Log.d("iTesa", "CsvFileAdapter.write()");
-            writer.append(d.t + "," + d.x + "," + d.y + "," + d.z + "," + d.n);
-            writer.newLine();
-            writer.flush();
+        long time = System.currentTimeMillis();
+        long delay = time - lastLog;
+    	try {
+        	if ( d == null ) {
+                Log.d("iTesa", "CSV log file - nothing to write");        		
+        	} else {
+                writer.append(d.n + "," + d.t + "," + d.x + "," + d.y +
+                		"," + d.z + "," + d.n + "," + d.abs + "," + d.max);
+                writer.newLine();
+                if (delay > FLUSH_TIME)
+                    writer.flush();
+                lastLog = time;
+        	}
         } catch (IOException e) {
             e.printStackTrace();
         }
