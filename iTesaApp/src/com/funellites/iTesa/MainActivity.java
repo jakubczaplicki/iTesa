@@ -16,9 +16,6 @@
 
 package com.funellites.iTesa;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -51,14 +48,15 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     protected CheckBox logData_cb;
 
     DataItem B = new DataItem();
+    DataMagnetometer Blocal = new DataMagnetometer();
     Magnetometer magnetometer = null;
     GraphView graphView = null;
     
 	static final private int MENU_PREFERENCES = Menu.FIRST; 	
 	private static final int SHOW_PREFERENCES = 1;
-	private int updateFreq = 3000;  // ms
-	private int saveLogFreq  = 1000;   // ms
-    private boolean logData = false;
+	private int updateFreq   = 3000; // ms
+	private int saveLogFreq  = 1000; // ms
+    private boolean logData  = false;
 	//private DBAdapter      dbAdapter      = null; // TODO: database
 
 	/** Called when the activity is first created. */	
@@ -78,8 +76,8 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
         yBTextView   = (TextView) findViewById(R.id.yB);
         zBTextView   = (TextView) findViewById(R.id.zB);
         absBTextView = (TextView) findViewById(R.id.absB);
-        avgBTextView = (TextView) findViewById(R.id.avgB);
         maxBTextView = (TextView) findViewById(R.id.maxB);
+        avgBTextView = (TextView) findViewById(R.id.avgB);
         iTextView    = (TextView) findViewById(R.id.iB);
         graphView    = (GraphView)this.findViewById(R.id.XYPlot);
         logData_cb   = (CheckBox) findViewById(R.id.logData_cb);
@@ -160,18 +158,19 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
     /** Callback function */
     public void addData( long n, long t, float bx, float by, float bz ) {
     	B.add(n, t, bx, by, bz );
+    	Blocal = new DataMagnetometer(n, t, bx, by, bz );
     }
     
     /** Updates the text fields on the UI. */	
 	private void updateGUI() {
-        tBTextView.setText("t: " + B.t/1000000 + " ms  ");
-        nBTextView.setText("n: " + B.n);
-        xBTextView.setText("x: " + B.x + " µT");
-        yBTextView.setText("y: " + B.y + " µT");
-        zBTextView.setText("z: " + B.z + " µT");
-        absBTextView.setText("abs: " + B.abs + " µT");
-        avgBTextView.setText("avg: " + B.sma + " µT");
-        maxBTextView.setText("max: " + B.max + " µT");
+        tBTextView.setText("t: " + Blocal.t/1000000 + " ms  ");
+        nBTextView.setText("n: " + Blocal.n);
+        xBTextView.setText("x: " + Blocal.x + " μT");
+        yBTextView.setText("y: " + Blocal.y + " μT");
+        zBTextView.setText("z: " + Blocal.z + " μT");
+        absBTextView.setText("abs: " + Blocal.abs + " μT");
+        maxBTextView.setText("max: " + Blocal.max + " μT");
+        //avgBTextView.setText("avg: " + Blocal.sma + " μT");
         // I don't understand this number !! why is it ~53 ms ?
         // see http://stackoverflow.com/questions/5060628/android-sensor-delay-fastest-isnt-fast-enough
         iTextView.setText("smpl.rate: " + magnetometer.delay + " ms");
@@ -188,7 +187,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 
 	/** Updates the graph on the UI. */	
 	private void updateGraph() {
-	    graphView.updateGraph( B.sma );
+	    graphView.updateGraph( Blocal.abs );
 	}
 	
 	/** Store data in csv file */	

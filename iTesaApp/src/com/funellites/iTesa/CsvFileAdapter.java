@@ -59,15 +59,14 @@ public class CsvFileAdapter {
         }
     }
 
-    public void write(DataItem d) {
+    public void write(DataMagnetometer d) {
         long time = System.currentTimeMillis();
         long delay = time - lastLog;
     	try {
         	if ( d == null ) {
                 Log.d("iTesa", "CSV log file - nothing to write");        		
         	} else {
-                writer.append(d.n + "," + d.t + "," + d.x + "," + d.y +
-                		"," + d.z + "," + d.n + "," + d.abs + "," + d.max);
+                writer.append(d.n + "," + d.t + "," + d.x + "," + d.y + "," + d.z + "," + d.abs + "," + d.max);
                 writer.newLine();
                 if (delay > FLUSH_TIME)
                     writer.flush();

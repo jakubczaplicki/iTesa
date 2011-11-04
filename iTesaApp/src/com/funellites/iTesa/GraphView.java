@@ -73,7 +73,7 @@ public class GraphView extends View {
 
         // load background image as a Bitmap instead of a Drawable b/c
         // we don't need to transform it and it's faster to draw this way
-        mBackgroundImage = BitmapFactory.decodeResource(r, R.drawable.earthmap);
+        mBackgroundImage = BitmapFactory.decodeResource(r, R.drawable.grav);
     }
 
     public void destroy() {

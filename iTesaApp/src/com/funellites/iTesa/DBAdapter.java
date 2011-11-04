@@ -65,11 +65,12 @@ public class DBAdapter {
 	
 	public long insertData(DataItem _data) {
 	  ContentValues newValues = new ContentValues(); // Create a new row of values to insert
-	  newValues.put( KEY_TIME, _data.t );
+	  /*newValues.put( KEY_TIME, _data.t );
 	  newValues.put( KEY_XB,   _data.x );
 	  newValues.put( KEY_YB,   _data.y );
-	  newValues.put( KEY_ZB,   _data.z );
+	  newValues.put( KEY_ZB,   _data.z );*/
 	  return db.insert(DB_TABLE, null, newValues); // Insert the row
+	  
 	}
 	
     public boolean removeData(long _rowIndex) {
@@ -79,10 +80,10 @@ public class DBAdapter {
 	
 	public boolean updateData(long _rowIndex, DataItem _data) {
 		  ContentValues newValues = new ContentValues();
-		  newValues.put( KEY_TIME, _data.t );
+		  /*newValues.put( KEY_TIME, _data.t );
 		  newValues.put( KEY_XB,   _data.x );
 		  newValues.put( KEY_YB,   _data.y );
-		  newValues.put( KEY_ZB,   _data.z );
+		  newValues.put( KEY_ZB,   _data.z );*/
 	      return db.update(DB_TABLE, newValues, KEY_ID + "=" + _rowIndex, null) > 0;		  
 		}
 
