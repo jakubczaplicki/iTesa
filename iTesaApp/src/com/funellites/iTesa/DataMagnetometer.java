@@ -1,7 +1,7 @@
 package com.funellites.iTesa;
 
 public class DataMagnetometer {
-   public final long  n;    // sample number 	
+   public final long  n;    // sample number 
    public final long  t;    // timestamp [ns]
    //public final float lat;  // Geocentric Latitude, Deg, (-90.0 -  90.0)     
    //public final float lng;  // Geocentric Longitude, Deg, ( -180.0 - 180.0)
@@ -31,44 +31,44 @@ public class DataMagnetometer {
       this.x = x;
       this.z = z;
       this.y = y;
-  	  this.abs = Math.round( Math.sqrt(x*x+y*y+z*z) );
+    this.abs = Math.round( Math.sqrt(x*x+y*y+z*z) );
       if (this.abs > this.max)
          this.max = this.abs;
 
-  	  //this.addAvg(B.abs);
-  	  //this.B.sma = B.getAvg();
+    //this.addAvg(B.abs);
+    //this.B.sma = B.getAvg();
       //setAvg(size);
    }
 
-	   /* Simple Moving Average */
-	   final boolean SMA = true;
-	   final boolean WMA = false;
-	   private int   size  = 100; // TODO make this as an option/setting
-	   private float total = 0f;
-	   private int   index = 0;
-	   private float samples[];
-	     
-	   /** Set Simple Moving Average */
-	   public void setAvg(int size) {
-	      this.size = size;
-	      samples = new float[size];
-	      for (int i = 0; i < size; i++) samples[i] = 0f;
-	   }
+   /* Simple Moving Average */
+   final boolean SMA = true;
+   final boolean WMA = false;
+   private int   size  = 100; // TODO make this as an option/setting
+   private float total = 0f;
+   private int   index = 0;
+   private float samples[];
+     
+   /** Set Simple Moving Average */
+   public void setAvg(int size) {
+      this.size = size;
+      samples = new float[size];
+      for (int i = 0; i < size; i++) samples[i] = 0f;
+   }
 
-	   /** Add data to average */
-	   public void addAvg(float x) {
-	        if (SMA) { /* Simple Moving Average */
-	             total -= samples[index];
-	             samples[index] = x;
-	             total += x;
-	             if (++index == size) index = 0;
-	        }	
-	        else if (WMA){ /* Weight Moving Average */
-	     }
-	   }
-	   
-	   public float getAvg() {
-	      return total / size;
-	    }
+   /** Add data to average */
+   public void addAvg(float x) {
+        if (SMA) { /* Simple Moving Average */
+             total -= samples[index];
+             samples[index] = x;
+             total += x;
+             if (++index == size) index = 0;
+        }
+        else if (WMA){ /* Weight Moving Average */
+     }
+   }
+   
+   public float getAvg() {
+      return total / size;
+    }
 
 }

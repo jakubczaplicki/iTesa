@@ -24,47 +24,45 @@ import android.util.Log;
 public final class DataItem
 {
    CsvFileAdapter csvFileAdapter = null;
+   private final static List<DataMagnetometer> dataArray = new ArrayList<DataMagnetometer>();
 
-    private final static List<DataMagnetometer> dataArray = new ArrayList<DataMagnetometer>();
-
-    public DataItem()
-    {
-    }    
+   public DataItem()
+   {
+   }    
     
-    public DataItem(long _time, float _xB, float _yB, float _zB) {
-        /*B.t = _time;
+   public DataItem(long _time, float _xB, float _yB, float _zB) {
+      /*B.t = _time;
         B.x = _xB;
         B.y = _yB;
         B.z = _zB;
-    	setAvg(size);
-    	this.dataArray = new ArrayList<magData>();*/
-    }
+        setAvg(size);
+        this.dataArray = new ArrayList<magData>();*/
+   }
 
-    public void add(long i, long t, float x,float y,float z) {
-    	DataMagnetometer b = new DataMagnetometer(i, t, x, y, z);
-        dataArray.add(b);
-        Log.d("iTesa", "add Bn: " + b.n);
-    }
+   public void add(long i, long t, float x,float y,float z) {
+      DataMagnetometer b = new DataMagnetometer(i, t, x, y, z);
+      dataArray.add(b);
+      Log.d("iTesa", "add Bn: " + b.n);
+   }
 
-    public void logFileOpen() {
-    	csvFileAdapter = new CsvFileAdapter("iTesa.csv");
-    	csvFileAdapter.open();
-    }
+   public void logFileOpen() {
+      csvFileAdapter = new CsvFileAdapter("iTesa.csv");
+      csvFileAdapter.open();
+   }
 
-    public void logFileClose() {
-    	if ( csvFileAdapter.isOpen ) {
-        	csvFileAdapter.close();
-        }
-    }
+   public void logFileClose() {
+      if ( csvFileAdapter.isOpen ) {
+         csvFileAdapter.close();
+      }
+   }
 
-    public void logFileSave()
-    {
-    	DataMagnetometer[] mgArray = DataItem.dataArray.toArray(new DataMagnetometer[DataItem.dataArray.size()]);
-        dataArray.clear();
-        for (DataMagnetometer magData : mgArray)
-        {
-            Log.d("iTesa", "save Bn: " + magData.n);
-            csvFileAdapter.write(magData);
-        }
-    }
+   public void logFileSave() {
+      DataMagnetometer[] mgArray = DataItem.dataArray.toArray(new DataMagnetometer[DataItem.dataArray.size()]);
+      dataArray.clear();
+      for (DataMagnetometer magData : mgArray)
+      {
+         Log.d("iTesa", "save Bn: " + magData.n);
+         csvFileAdapter.write(magData);
+      }
+   }
 }
