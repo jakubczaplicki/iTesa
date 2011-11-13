@@ -51,7 +51,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
    DataMagnetometer Blocal = new DataMagnetometer();
    Magnetometer magnetometer = null;
    GraphView graphView = null;
-    
+
    static final private int MENU_PREFERENCES = Menu.FIRST; 
    private static final int SHOW_PREFERENCES = 1;
    private int updateFreq   = 3000; // ms
