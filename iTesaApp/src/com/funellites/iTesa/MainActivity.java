@@ -97,11 +97,16 @@ public class MainActivity extends Activity implements Magnetometer.Callback, OnC
    public void onClick(View src) {
        switch (src.getId()) {
        case R.id.logData_cb:
-           // dbAdapter.open();      // TODO: database
-           B.logFileOpen();
-           logData = !logData;
-           startService(new Intent(this, LogService.class));
-           Toast.makeText(getBaseContext(), "Logging state changed", Toast.LENGTH_SHORT).show();
+           if (!logData_cb.isChecked()) {
+               stopService(new Intent(this, LogService.class));
+           }
+           else
+           {
+              // dbAdapter.open();      // TODO: database
+              B.logFileOpen();
+              startService(new Intent(this, LogService.class));
+              Toast.makeText(getBaseContext(), "Logging state changed", Toast.LENGTH_SHORT).show();
+           }
            break;
        }
    }
