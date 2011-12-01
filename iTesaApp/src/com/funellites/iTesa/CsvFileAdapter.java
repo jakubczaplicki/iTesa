@@ -42,7 +42,7 @@ public class CsvFileAdapter {
          Log.d("iTesa", "CsvFileAdapter.open()");
          writer = new BufferedWriter(new OutputStreamWriter(
          new FileOutputStream(file, true)));
-         isOpen = true;
+         this.isOpen = true;
       } catch (IOException e) {
          e.printStackTrace();
       }
@@ -52,7 +52,7 @@ public class CsvFileAdapter {
       try {
          Log.d("iTesa", "CsvFileAdapter.close()");
          writer.close();
-         isOpen = false;
+         this.isOpen = false;
       } catch (IOException e) {
          e.printStackTrace();
       }

@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -34,7 +35,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements Magnetometer.Callback {
+public class MainActivity extends Activity implements Magnetometer.Callback, OnClickListener  {
 
    protected TextView tBTextView;
    protected TextView nBTextView;
@@ -82,19 +83,10 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
       iTextView    = (TextView) findViewById(R.id.iB);
       graphView    = (GraphView)this.findViewById(R.id.XYPlot);
       logData_cb   = (CheckBox) findViewById(R.id.logData_cb);
-
-      logData_cb.setOnClickListener(new OnClickListener() {
-         public void onClick(View v) {
-            // dbAdapter.open();      // TODO: database
-            B.logFileOpen();
-            logData = !logData;
-            Toast.makeText(getBaseContext(), "Logging state changed", Toast.LENGTH_SHORT).show();
-         }
-      });
+      logData_cb.setOnClickListener(this);
         
-      magnetometer = new Magnetometer( this, this );
-
-      makeThread(); // start a thread to refresh UI
+      //magnetometer = new Magnetometer( this, this );
+      //makeThread(); // start a thread to refresh UI
 
       getWindow().addFlags( WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
                             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
@@ -102,6 +94,18 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
                             WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD );
     }
     
+   public void onClick(View src) {
+       switch (src.getId()) {
+       case R.id.logData_cb:
+           // dbAdapter.open();      // TODO: database
+           B.logFileOpen();
+           logData = !logData;
+           startService(new Intent(this, LogService.class));
+           Toast.makeText(getBaseContext(), "Logging state changed", Toast.LENGTH_SHORT).show();
+           break;
+       }
+   }
+   
    @Override
    protected void onResume() {
       super.onResume();
@@ -127,6 +131,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
       Log.d("iTesa", "MainActivity:onDestroy()");
       // stop the thread. Do not use unsafe depreciated guiThread.stop(); 
       // see : http://stackoverflow.com/questions/4756862/how-to-stop-a-thread )
+      /*
       guiThread.threadRunning  = false;
       try {
          guiThread.join();
@@ -140,9 +145,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
       } catch (InterruptedException e) {
          e.printStackTrace();
       }
-
-      // unregister magnetometer listener
-      magnetometer.close();
+      */
 
       // close the database 
       /*if ( dbAdapter.isOpen ) {
@@ -207,21 +210,20 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
  *************************************************************************/
 
    private GuiThread guiThread;
-   private LogThread logThread;
 
    /** Creates the thread (this method is invoked from onCreate()) */
    private void makeThread() {
-      Log.d("iTesa", "makeThread()");
+      /*Log.d("iTesa", "makeThread()");
       guiThread = new GuiThread();
       guiThread.start();
       logThread = new LogThread();
-      logThread.start();
+      logThread.start();*/
    }
 
    /** Instantiating Handler associated with the GUI thread */
    private Handler msgGuiHandler = new Handler() {
       @Override
-      public void handleMessage(Message msg) { 
+      public void handleMessage(Message msg) {
       //Log.d("iTesa", "msgGuiHandler " + System.currentTimeMillis() );
          switch(msg.what) {
             case 1: updateGUI();        break;
@@ -268,6 +270,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
 
       @Override
       public void run() {
+    	 Looper.prepare();
          while (threadRunning) {
             //Send update to the main thread
             msgGuiHandler.sendMessage(Message.obtain(msgGuiHandler, 1));
@@ -278,6 +281,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback {
                e.printStackTrace();
             }
          }
+         Looper.loop();
       }
    }
     

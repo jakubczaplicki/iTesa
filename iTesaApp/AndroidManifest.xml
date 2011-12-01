@@ -16,8 +16,14 @@
             </intent-filter>
         </activity>
 
-		<activity android:name=".Preferences" android:label="My Preferences">
-		</activity>
+        <service android:enabled="true" android:name=".LogService">
+            <intent-filter>
+                <action android:name="com.funellites.iTesa.LOG_SERVICE" />
+            </intent-filter>
+        </service>
+            
+        <activity android:name=".Preferences" android:label="My Preferences">
+        </activity>
     </application>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />    
 </manifest>

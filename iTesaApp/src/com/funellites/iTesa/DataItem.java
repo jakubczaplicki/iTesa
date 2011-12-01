@@ -21,6 +21,8 @@ import java.util.List;
 
 import android.util.Log;
 
+import org.apache.commons.math.stat.*;
+
 public final class DataItem
 {
    CsvFileAdapter csvFileAdapter = null;
@@ -51,8 +53,10 @@ public final class DataItem
    }
 
    public void logFileClose() {
-      if ( csvFileAdapter.isOpen ) {
-         csvFileAdapter.close();
+      if( csvFileAdapter != null ) {
+         if ( csvFileAdapter.isOpen ) {
+            csvFileAdapter.close();
+         }
       }
    }
 
@@ -62,7 +66,7 @@ public final class DataItem
       for (DataMagnetometer magData : mgArray)
       {
          Log.d("iTesa", "save Bn: " + magData.n);
-         csvFileAdapter.write(magData);
+         this.csvFileAdapter.write(magData);
       }
    }
 }

@@ -68,12 +68,19 @@ public class Magnetometer {
       }
    };
 
-   public void close() {
+   public void start() {
+      sensorManager.registerListener( sensorEventListener,
+                    sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+                    SensorManager.SENSOR_DELAY_FASTEST);
+   }
+	   
+   public void stop() {
       Log.d("iTesa", "Magnetometer.close() - unregister magnetometer listener");
       sensorManager.unregisterListener(sensorEventListener,
       sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
    }
-    
+
+   
    public interface Callback {
       void addData(long n, long t, float bx, float by, float bz);
    }
