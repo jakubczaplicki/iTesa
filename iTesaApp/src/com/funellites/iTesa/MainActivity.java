@@ -35,23 +35,21 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements Magnetometer.Callback, OnClickListener  {
+public class MainActivity extends Activity implements OnClickListener  {
+    public final static String TAG = "iTesa";
+    protected TextView tBTextView;
+    protected TextView nBTextView;
+    protected TextView xBTextView;
+    protected TextView yBTextView;
+    protected TextView zBTextView;
+    protected TextView absBTextView;
+    protected TextView avgBTextView;
+    protected TextView maxBTextView;
+    protected TextView iTextView;
+    protected CheckBox logData_cb;
 
-   protected TextView tBTextView;
-   protected TextView nBTextView;
-   protected TextView xBTextView;
-   protected TextView yBTextView;
-   protected TextView zBTextView;
-   protected TextView absBTextView;
-   protected TextView avgBTextView;
-   protected TextView maxBTextView;
-   protected TextView iTextView;
-   protected CheckBox logData_cb;
-
-   DataItem B = new DataItem();
-   DataMagnetometer Blocal = new DataMagnetometer();
-   Magnetometer magnetometer = null;
-   GraphView graphView = null;
+    DataMagnetometer Blocal = new DataMagnetometer();
+    GraphView graphView = null;
 
    static final private int MENU_PREFERENCES = Menu.FIRST; 
    private static final int SHOW_PREFERENCES = 1;
@@ -65,7 +63,6 @@ public class MainActivity extends Activity implements Magnetometer.Callback, OnC
    public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       Log.d("iTesa",this.getClass().getName()+":onCreate()");
-
       setContentView(R.layout.main);
 
       updateFromPreferences(); // load and set preferences
@@ -85,7 +82,6 @@ public class MainActivity extends Activity implements Magnetometer.Callback, OnC
       logData_cb   = (CheckBox) findViewById(R.id.logData_cb);
       logData_cb.setOnClickListener(this);
         
-      //magnetometer = new Magnetometer( this, this );
       //makeThread(); // start a thread to refresh UI
 
       getWindow().addFlags( WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
@@ -103,7 +99,6 @@ public class MainActivity extends Activity implements Magnetometer.Callback, OnC
            else
            {
               // dbAdapter.open();      // TODO: database
-              B.logFileOpen();
               startService(new Intent(this, LogService.class));
               Toast.makeText(getBaseContext(), "Logging state changed", Toast.LENGTH_SHORT).show();
            }
@@ -156,14 +151,6 @@ public class MainActivity extends Activity implements Magnetometer.Callback, OnC
       /*if ( dbAdapter.isOpen ) {
         dbAdapter.close(); // TODO: database
       }*/
-    
-      B.logFileClose();
-   }
-
-   /** Callback function */
-   public void addData( long n, long t, float bx, float by, float bz ) {
-      B.add(n, t, bx, by, bz );
-      Blocal = new DataMagnetometer(n, t, bx, by, bz );
    }
     
    /** Updates the text fields on the UI. */
@@ -178,7 +165,7 @@ public class MainActivity extends Activity implements Magnetometer.Callback, OnC
       //avgBTextView.setText("avg: " + Blocal.sma + " μT");
       // I don't understand this number !! why is it ~53 ms ?
       // see http://stackoverflow.com/questions/5060628/android-sensor-delay-fastest-isnt-fast-enough
-      iTextView.setText("smpl.rate: " + magnetometer.delay + " ms");
+      //iTextView.setText("smpl.rate: " + magnetometer.delay + " ms");
 
       tBTextView.invalidate();
       xBTextView.invalidate();
@@ -187,27 +174,12 @@ public class MainActivity extends Activity implements Magnetometer.Callback, OnC
       absBTextView.invalidate();
       avgBTextView.invalidate();
       maxBTextView.invalidate();
-      iTextView.invalidate();
+      //iTextView.invalidate();
    }
 
    /** Updates the graph on the UI. */
    private void updateGraph() {
       graphView.updateGraph( Blocal.abs );
-   }
-
-   /** Store data in csv file */
-   private void storeDataCsvFile() {
-      // Toast.makeText(getBaseContext(), "storeDataCsv()", Toast.LENGTH_SHORT).show();
-      if (logData) {
-         B.logFileSave();
-      }
-   }
-
-   /** Store data in sqlite database */
-   private void storeDataSqlite() {
-      if (logData) {
-         //dbAdapter.insertData(B); // store data in sqlite db (returns long row) TODO: database
-      }
    }
 
 /*************************************************************************
@@ -218,11 +190,9 @@ public class MainActivity extends Activity implements Magnetometer.Callback, OnC
 
    /** Creates the thread (this method is invoked from onCreate()) */
    private void makeThread() {
-      /*Log.d("iTesa", "makeThread()");
+      Log.d("iTesa", "makeThread()");
       guiThread = new GuiThread();
       guiThread.start();
-      logThread = new LogThread();
-      logThread.start();*/
    }
 
    /** Instantiating Handler associated with the GUI thread */
@@ -236,36 +206,6 @@ public class MainActivity extends Activity implements Magnetometer.Callback, OnC
          }
       }
    };
-
-   /** Instantiating Handler associated with the log file thread */
-   private Handler msgLogHandler = new Handler() {
-      @Override
-      public void handleMessage(Message msg) {
-      //Log.d("iTesa", "msgDataHandler " + System.currentTimeMillis() );
-         switch(msg.what) {
-            case 1: storeDataCsvFile(); break;
-            case 2: storeDataSqlite();  break;
-         }
-      }
-   };
-
-   /** Thread class for saving data */
-   class LogThread extends Thread {
-      public boolean threadRunning = true;
-      public LogThread() {}
-
-      @Override
-      public void run() {
-         while (threadRunning) {
-            msgLogHandler.sendMessage(Message.obtain(msgLogHandler, 1));
-            try {
-               Thread.sleep(saveLogFreq);
-            } catch(Exception e) {
-               e.printStackTrace();
-            }
-         }
-      }
-   }
 
    /** Thread class for refreshing the UI */
    class GuiThread extends Thread {

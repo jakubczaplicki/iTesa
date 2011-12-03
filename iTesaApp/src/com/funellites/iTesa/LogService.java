@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
@@ -24,9 +23,9 @@ public class LogService extends Service implements Magnetometer.Callback {
 
     @Override
     public void onCreate() {
-        //Context context = getApplicationContext();
         nManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         magnetometer = new Magnetometer(this, this);
+        //magnetometer.logFileOpen()
         showNotification();
     }
 
@@ -51,6 +50,7 @@ public class LogService extends Service implements Magnetometer.Callback {
 
     public void addData(long n, long t, float bx, float by, float bz){
         Log.i( TAG, "#n: " + n);
+        //B.add(n, t, bx, by, bz );
     }
     
     private void showNotification() {

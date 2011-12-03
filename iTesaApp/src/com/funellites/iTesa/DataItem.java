@@ -23,7 +23,7 @@ import android.util.Log;
 
 import org.apache.commons.math.stat.*;
 
-public final class DataItem
+public abstract class DataItem
 {
    CsvFileAdapter csvFileAdapter = null;
    private final static List<DataMagnetometer> dataArray = new ArrayList<DataMagnetometer>();
