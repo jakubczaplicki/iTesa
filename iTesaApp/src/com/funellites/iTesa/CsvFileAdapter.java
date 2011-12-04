@@ -27,28 +27,50 @@ public class CsvFileAdapter {
       return formatter.format(date);  
    } 
    
-   public CsvFileAdapter(String fileName) {
-      File root = new File(Environment.getExternalStorageDirectory(), "iTesa");
-      if (!root.exists()) {
-         root.mkdirs();
-      }
-      Log.d("iTesa", "CsvFileAdapter: " + root + " " + getDateTime() + fileName);
-      fileName = getDateTime() + "_" + fileName; 
-      file = new File(root, fileName);
+   public CsvFileAdapter(String dirName, String fileName) 
+   {
+        @SuppressWarnings("unused")
+		boolean mExternalStorageAvailable = false;
+		boolean mExternalStorageWriteable = false;
+		String state = Environment.getExternalStorageState();
+
+		if (Environment.MEDIA_MOUNTED.equals(state)) {
+		    // We can read and write the media
+		    mExternalStorageAvailable = mExternalStorageWriteable = true;
+		} else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+		    // We can only read the media
+		    mExternalStorageAvailable = true;
+		    mExternalStorageWriteable = false;
+		} else {
+		    // Something else is wrong. It may be one of many other states, but all we need
+		    //  to know is we can neither read nor write
+		    mExternalStorageAvailable = mExternalStorageWriteable = false;
+		}
+		
+		if ( mExternalStorageWriteable )
+		{
+            File root = new File(Environment.getExternalStorageDirectory(), dirName);
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+            Log.d("iTesa", "CsvFileAdapter: " + root + " " + getDateTime() + fileName);
+            fileName = getDateTime() + "_" + fileName; 
+            file = new File(root, fileName);
+		}
    }
    
-   public void open() {
+   public void openWriter() 
+   {
       try {
          Log.d("iTesa", "CsvFileAdapter.open()");
-         writer = new BufferedWriter(new OutputStreamWriter(
-         new FileOutputStream(file, true)));
+         writer = new BufferedWriter(new OutputStreamWriter( new FileOutputStream(file, true) ));
          this.isOpen = true;
       } catch (IOException e) {
          e.printStackTrace();
       }
    }
 
-   public void close() {
+   public void closeWriter() {
       try {
          Log.d("iTesa", "CsvFileAdapter.close()");
          writer.close();
@@ -65,7 +87,7 @@ public class CsvFileAdapter {
          if ( d == null ) {
             Log.d("iTesa", "CSV log file - nothing to write");        
          } else {
-            writer.append(d.n + "," + d.t + "," + d.x + "," + d.y + "," + d.z + "," + d.abs + "," + d.max);
+            writer.append(d.t + "," + d.x + "," + d.y + "," + d.z + "," + d.abs + "," + d.max);
             writer.newLine();
             if (delay > FLUSH_TIME)
             writer.flush();

@@ -30,11 +30,12 @@ public class DBAdapter {
 
 private static final int    DB_VERSION = 1;
 private static final String DB_NAME    = "itesadb.sqlite";
-private static final String DB_TABLE   = "magneticfield";
+private static final String DB_TABLE_MAG = "magneticfield";
+private static final String DB_TABLE_TEL = "telemetry";
 public static final String KEY_ID      = "_id";
+public static final String KEY_TIME    = "time";
 public static final String KEY_LAT     = "lat";
 public static final String KEY_LNG     = "lng";
-public static final String KEY_TIME    = "time";
 public static final String KEY_XB      = "xB";
 public static final String KEY_YB      = "yB";
 public static final String KEY_ZB      = "zB";
@@ -63,43 +64,77 @@ public void open() throws SQLiteException {
     isOpen = true;
 }
 
-public long insertData(DataItem _data) {
+/*** Magnetometer database ***/
+
+public long insertDataMagnetometer(DataMagnetometer data) {
     ContentValues newValues = new ContentValues(); // Create a new row of values to insert
-    /*newValues.put( KEY_TIME, _data.t );
-    newValues.put( KEY_XB,   _data.x );
-    newValues.put( KEY_YB,   _data.y );
-    newValues.put( KEY_ZB,   _data.z );*/
-    return db.insert(DB_TABLE, null, newValues); // Insert the row
+    newValues.put( KEY_TIME, data.t );
+    newValues.put( KEY_XB,   data.x );
+    newValues.put( KEY_YB,   data.y );
+    newValues.put( KEY_ZB,   data.z );
+    return db.insert(DB_TABLE_MAG, null, newValues); // Insert the row
 }
 
-public boolean removeData(long _rowIndex) {
+public boolean removeDataMagnetometer(long _rowIndex) {
     // Remove a row from DB based on its index
-    return db.delete(DB_TABLE, KEY_ID + "=" + _rowIndex, null) > 0;
+    return db.delete(DB_TABLE_MAG, KEY_ID + "=" + _rowIndex, null) > 0;
 }
 
-public boolean updateData(long _rowIndex, DataItem _data) {
+/* We don't need to update rows in DB
+public boolean updateData(long _rowIndex, DataMagnetometer data) {
     ContentValues newValues = new ContentValues();
-    /*newValues.put( KEY_TIME, _data.t );
-    newValues.put( KEY_XB,   _data.x );
-    newValues.put( KEY_YB,   _data.y );
-    newValues.put( KEY_ZB,   _data.z );*/
+    newValues.put( KEY_TIME, data.t );
+    newValues.put( KEY_XB,   data.x );
+    newValues.put( KEY_YB,   data.y );
+    newValues.put( KEY_ZB,   data.z );
     return db.update(DB_TABLE, newValues, KEY_ID + "=" + _rowIndex, null) > 0;  
 }
+*/
 
-// Return data element from DB
-public DataItem getDataItem(long _rowIndex) throws SQLException {
-    Cursor cursor = db.query(true, DB_TABLE, 
-                             new String[] {KEY_ID, KEY_XB, KEY_YB, KEY_ZB, KEY_TIME},
-                             KEY_ID + "=" + _rowIndex, null, null, null, 
-                             null, null);
+// Return data element from magnetometer DB
+public DataMagnetometer getDataMagnetometer(long _rowIndex) throws SQLException {
+    Cursor cursor = db.query(true, DB_TABLE_MAG, 
+                             new String[] {KEY_ID, KEY_TIME, KEY_XB, KEY_YB, KEY_ZB},
+                             KEY_ID + "=" + _rowIndex, null, null, null, null, null);
     if ((cursor.getCount() == 0) || !cursor.moveToFirst()) {
         throw new SQLException("No data item found for row: " + _rowIndex);
     }
-    long time = cursor.getLong(cursor.getColumnIndex(KEY_TIME));
+    long  tB = cursor.getLong(cursor.getColumnIndex(KEY_TIME));
     float xB = cursor.getFloat(cursor.getColumnIndex(KEY_XB));
     float yB = cursor.getFloat(cursor.getColumnIndex(KEY_YB));
     float zB = cursor.getFloat(cursor.getColumnIndex(KEY_ZB));
-    DataItem result = new DataItem(time, xB, yB, zB);
+    DataMagnetometer result = new DataMagnetometer(tB, xB, yB, zB);
+    return result;
+}
+
+
+/*** Telemetry database ***/
+
+public long insertDataTelemetry(DataTelemetry data) {
+    ContentValues newValues = new ContentValues(); // Create a new row of values to insert
+    newValues.put( KEY_TIME, data.t );
+    newValues.put( KEY_LNG,  data.lng );
+    newValues.put( KEY_LAT,  data.lat );
+    return db.insert(DB_TABLE_TEL, null, newValues); // Insert the row
+}
+
+public boolean removeDataTelemetry(long _rowIndex) {
+    // Remove a row from DB based on its index
+    return db.delete(DB_TABLE_TEL, KEY_ID + "=" + _rowIndex, null) > 0;
+}
+
+//Return data element from magnetometer DB
+public DataTelemetry getDataTelemetry(long _rowIndex) throws SQLException {
+    Cursor cursor = db.query(true, DB_TABLE_TEL, 
+                             new String[] {KEY_ID, KEY_TIME, KEY_LAT, KEY_LNG},
+                             KEY_ID + "=" + _rowIndex, null, null, null, null, null);
+    if ((cursor.getCount() == 0) || !cursor.moveToFirst()) {
+        throw new SQLException("No data item found for row: " + _rowIndex);
+    }
+    long  t = cursor.getLong(cursor.getColumnIndex(KEY_TIME));
+    float lat = cursor.getFloat(cursor.getColumnIndex(KEY_LAT));
+    float lng = cursor.getFloat(cursor.getColumnIndex(KEY_LNG));
+    DataTelemetry result = new DataTelemetry(t, lat, lng);
     return result;
 }
 
@@ -116,7 +151,7 @@ private static class ITesaDBOpenHelper extends SQLiteOpenHelper {
     }
 
     // SQL Statement to create a new database.
-    private static final String DATABASE_CREATE = "create table " + DB_TABLE + " (" +
+    private static final String DATABASE_MAG_CREATE = "create table " + DB_TABLE_MAG + " (" +
         KEY_ID   + " integer primary key autoincrement not null, " +
         KEY_TIME + " long," +
         KEY_XB   + " float," +
@@ -124,18 +159,29 @@ private static class ITesaDBOpenHelper extends SQLiteOpenHelper {
         KEY_ZB   + " float" +
         ");";
 
+    private static final String DATABASE_TEL_CREATE = "create table " + DB_TABLE_TEL + " (" +
+        KEY_ID   + " integer primary key autoincrement not null, " +
+        KEY_TIME + " long," +
+        KEY_LAT  + " float," +
+        KEY_LNG  + " float" +
+        ");";
+
+    
     protected void dropAndCreate(SQLiteDatabase _db) {
-    _db.execSQL("drop table if exists " + DB_TABLE + ";");
-    _db.execSQL(DATABASE_CREATE);
-    }        
+        _db.execSQL("drop table if exists " + DB_TABLE_MAG + ";");
+        _db.execSQL(DATABASE_MAG_CREATE);
+        _db.execSQL("drop table if exists " + DB_TABLE_TEL + ";");
+        _db.execSQL(DATABASE_TEL_CREATE);
+    }
 
     @Override
     public void onUpgrade(SQLiteDatabase _db, int _oldVersion, int _newVersion) {
-        Log.w("TestApp dbAdapter", "Upgrading from version " + 
+        Log.w("TestApp dbAdapter", "Upgrading from version " +
               _oldVersion + " to " +
               _newVersion + ", which will destroy all old data");
         // Drop the old table.
-        _db.execSQL("DROP TABLE IF EXISTS " + DB_TABLE);
+        _db.execSQL("DROP TABLE IF EXISTS " + DB_TABLE_MAG);
+        _db.execSQL("DROP TABLE IF EXISTS " + DB_TABLE_TEL);
         // Create a new one.
         onCreate(_db);
         }

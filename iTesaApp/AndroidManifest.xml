@@ -16,9 +16,9 @@
             </intent-filter>
         </activity>
 
-        <service android:enabled="true" android:name=".LogService">
+        <service android:enabled="true" android:name=".MainService">
             <intent-filter>
-                <action android:name="com.funellites.iTesa.LOG_SERVICE" />
+                <action android:name="com.funellites.iTesa.MAIN_SERVICE" />
             </intent-filter>
         </service>
             

@@ -21,10 +21,9 @@ import java.util.List;
 
 import android.util.Log;
 
-import org.apache.commons.math.stat.*;
-
 public abstract class DataItem
 {
+	
    CsvFileAdapter csvFileAdapter = null;
    private final static List<DataMagnetometer> dataArray = new ArrayList<DataMagnetometer>();
 
@@ -41,21 +40,21 @@ public abstract class DataItem
         this.dataArray = new ArrayList<magData>();*/
    }
 
-   public void add(long i, long t, float x,float y,float z) {
-      DataMagnetometer b = new DataMagnetometer(i, t, x, y, z);
+   public void add(long t, float x,float y,float z) {
+      DataMagnetometer b = new DataMagnetometer(t, x, y, z);
       dataArray.add(b);
-      Log.d("iTesa", "add Bn: " + b.n);
+      Log.d("iTesa", "add Bt: " + b.t);
    }
 
    public void logFileOpen() {
-      csvFileAdapter = new CsvFileAdapter("iTesa.csv");
-      csvFileAdapter.open();
+      csvFileAdapter = new CsvFileAdapter("iTesa", "iTesa.csv");
+      csvFileAdapter.openWriter();
    }
 
    public void logFileClose() {
       if( csvFileAdapter != null ) {
          if ( csvFileAdapter.isOpen ) {
-            csvFileAdapter.close();
+            csvFileAdapter.closeWriter();
          }
       }
    }
@@ -65,7 +64,7 @@ public abstract class DataItem
       dataArray.clear();
       for (DataMagnetometer magData : mgArray)
       {
-         Log.d("iTesa", "save Bn: " + magData.n);
+         Log.d("iTesa", "save Bt: " + magData.t);
          this.csvFileAdapter.write(magData);
       }
    }

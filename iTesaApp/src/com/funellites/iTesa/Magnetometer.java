@@ -28,7 +28,6 @@ public class Magnetometer extends DataItem implements SensorEventListener
 {
     private SensorManager sensorManager = null; 
     private Magnetometer.Callback cb = null;
-    public  long i = 0;
     private long n = 0;
     public  long delay = 0;
     private long TimeNew = System.nanoTime();
@@ -56,7 +55,7 @@ public class Magnetometer extends DataItem implements SensorEventListener
                n++;
                if (cb!=null) 
                {
-                  cb.addData( n,
+                  cb.addDataMagnetometer( n,
                               event.timestamp,
                               event.values[0], 
                               event.values[1],
@@ -86,6 +85,6 @@ public class Magnetometer extends DataItem implements SensorEventListener
 
     public interface Callback 
     {
-        void addData(long n, long t, float bx, float by, float bz);
+        void addDataMagnetometer(long n, long t, float bx, float by, float bz);
     }
 }
