@@ -16,11 +16,18 @@
 
 package com.funellites.iTesa;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.OutputStream;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -29,6 +36,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,14 +51,15 @@ public class MainActivity extends Activity implements OnClickListener  {
     protected TextView avgBTextView;
     protected TextView maxBTextView;
     protected TextView iTextView;
+    protected ImageView imageView;
     protected CheckBox logData_cb;
 
     DataMagnetometer Blocal = new DataMagnetometer();
-    GraphView graphView = null;
+    //GraphView graphView = null;
 
     static final private int MENU_PREFERENCES = Menu.FIRST; 
     private static final int SHOW_PREFERENCES = 1;
-    private int updateFreq   = 3000; // ms
+    private int updateFreq   = 15000; // ms
 
     /** Called when the activity is first created. */
     @Override
@@ -71,11 +80,12 @@ public class MainActivity extends Activity implements OnClickListener  {
         maxBTextView = (TextView) findViewById(R.id.maxB);
         avgBTextView = (TextView) findViewById(R.id.avgB);
         iTextView    = (TextView) findViewById(R.id.iB);
-        graphView    = (GraphView)this.findViewById(R.id.XYPlot);
+        //graphView    = (GraphView)this.findViewById(R.id.XYPlot);
+        imageView    = (ImageView) findViewById(R.id.image);
         logData_cb   = (CheckBox) findViewById(R.id.logData_cb);
         logData_cb.setOnClickListener(this);
         
-        //makeThread(); // start a thread to refresh UI
+        makeThread(); // start a thread to refresh UI
 
         getWindow().addFlags( WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
                             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
@@ -99,9 +109,9 @@ public class MainActivity extends Activity implements OnClickListener  {
                     Toast.makeText(getBaseContext(), "Logging state changed", Toast.LENGTH_SHORT).show();
                 }
                 break;
-       }
-   }
-   
+        }
+    }
+    
     @Override
     protected void onResume() 
     {
@@ -155,7 +165,13 @@ public class MainActivity extends Activity implements OnClickListener  {
     /** Updates the graph on the UI. */
     private void updateGraph() 
     {
-        graphView.updateGraph( Blocal.abs );
+    	String path = Environment.getExternalStorageDirectory().toString();
+    	String fname = path+"/atlas.png"; // /mnt/sdcard/atlas.png
+    	//Log.d(TAG, fname);
+    	/*Bitmap bm = BitmapFactory.decodeFile(fname); 
+    	imageView.setImageBitmap(bm);*/ 
+    	
+        //graphView.updateGraph( Blocal.abs );
     }
 
 /*************************************************************************
@@ -182,7 +198,7 @@ public class MainActivity extends Activity implements OnClickListener  {
       {
          while (threadRunning) 
          {
-            updateGUI();
+            //updateGUI();
             updateGraph();
             try 
             {

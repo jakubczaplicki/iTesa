@@ -28,10 +28,9 @@ public class Magnetometer extends DataItem implements SensorEventListener
 {
     private SensorManager sensorManager = null; 
     private Magnetometer.Callback cb = null;
-    private long n = 0;
+    public  long n = 0;
+    public  long t = 0;
     public  long delay = 0;
-    private long TimeNew = System.nanoTime();
-    private long TimeOld = TimeNew;
 
     public Magnetometer(Context context, Magnetometer.Callback cb) 
     {
@@ -46,6 +45,9 @@ public class Magnetometer extends DataItem implements SensorEventListener
     @Override
     public void onSensorChanged(SensorEvent event) 
     {
+        long TimeNew = System.nanoTime();
+        long TimeOld = TimeNew;
+
         synchronized (this) 
         {
             switch (event.sensor.getType()) 
@@ -61,6 +63,7 @@ public class Magnetometer extends DataItem implements SensorEventListener
                               event.values[1],
                               event.values[2] );
                }
+               t = event.timestamp;
                TimeNew = event.timestamp;
                delay = (long)((TimeNew - TimeOld)/1000000);
                TimeOld = TimeNew;

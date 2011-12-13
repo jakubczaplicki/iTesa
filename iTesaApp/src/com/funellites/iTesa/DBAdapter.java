@@ -23,11 +23,13 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.util.Log;
 
 public class DBAdapter {
 
+public final static String TAG = "iTesa";
 private static final int    DB_VERSION = 1;
 private static final String DB_NAME    = "itesadb.sqlite";
 private static final String DB_TABLE_MAG = "magneticfield";
@@ -39,6 +41,7 @@ public static final String KEY_LNG     = "lng";
 public static final String KEY_XB      = "xB";
 public static final String KEY_YB      = "yB";
 public static final String KEY_ZB      = "zB";
+public static final String KEY_ABSB      = "absB";
 
 public boolean isOpen = false;
 
@@ -72,6 +75,7 @@ public long insertDataMagnetometer(DataMagnetometer data) {
     newValues.put( KEY_XB,   data.x );
     newValues.put( KEY_YB,   data.y );
     newValues.put( KEY_ZB,   data.z );
+    newValues.put( KEY_ABSB, data.abs );
     return db.insert(DB_TABLE_MAG, null, newValues); // Insert the row
 }
 
@@ -91,10 +95,19 @@ public boolean updateData(long _rowIndex, DataMagnetometer data) {
 }
 */
 
+public long getNoOfRowsMagnetometer() {
+    String sql = "SELECT COUNT(*) FROM " + DB_TABLE_MAG;
+    SQLiteStatement statement = db.compileStatement(sql);
+    long count = statement.simpleQueryForLong();
+    return count;
+}
+
 // Return data element from magnetometer DB
 public DataMagnetometer getDataMagnetometer(long _rowIndex) throws SQLException {
-    Cursor cursor = db.query(true, DB_TABLE_MAG, 
-                             new String[] {KEY_ID, KEY_TIME, KEY_XB, KEY_YB, KEY_ZB},
+	//Log.d(TAG, "getDataMagnetometer(" + _rowIndex + ")");
+    Cursor cursor; 
+    cursor = db.query(true, DB_TABLE_MAG, 
+                             new String[] {KEY_ID, KEY_TIME, KEY_XB, KEY_YB, KEY_ZB, KEY_ABSB},
                              KEY_ID + "=" + _rowIndex, null, null, null, null, null);
     if ((cursor.getCount() == 0) || !cursor.moveToFirst()) {
         throw new SQLException("No data item found for row: " + _rowIndex);
@@ -103,7 +116,8 @@ public DataMagnetometer getDataMagnetometer(long _rowIndex) throws SQLException 
     float xB = cursor.getFloat(cursor.getColumnIndex(KEY_XB));
     float yB = cursor.getFloat(cursor.getColumnIndex(KEY_YB));
     float zB = cursor.getFloat(cursor.getColumnIndex(KEY_ZB));
-    DataMagnetometer result = new DataMagnetometer(tB, xB, yB, zB);
+    float absB = cursor.getFloat(cursor.getColumnIndex(KEY_ABSB));
+    DataMagnetometer result = new DataMagnetometer(tB, xB, yB, zB, absB);
     return result;
 }
 
@@ -123,18 +137,25 @@ public boolean removeDataTelemetry(long _rowIndex) {
     return db.delete(DB_TABLE_TEL, KEY_ID + "=" + _rowIndex, null) > 0;
 }
 
+public long getNoOfRowsTelemetry() {
+    String sql = "SELECT COUNT(*) FROM " + DB_TABLE_TEL;
+    SQLiteStatement statement = db.compileStatement(sql);
+    long count = statement.simpleQueryForLong();
+    return count;
+}
+
 //Return data element from magnetometer DB
 public DataTelemetry getDataTelemetry(long _rowIndex) throws SQLException {
     Cursor cursor = db.query(true, DB_TABLE_TEL, 
-                             new String[] {KEY_ID, KEY_TIME, KEY_LAT, KEY_LNG},
+                             new String[] {KEY_ID, KEY_TIME, KEY_LNG, KEY_LAT},
                              KEY_ID + "=" + _rowIndex, null, null, null, null, null);
     if ((cursor.getCount() == 0) || !cursor.moveToFirst()) {
         throw new SQLException("No data item found for row: " + _rowIndex);
     }
     long  t = cursor.getLong(cursor.getColumnIndex(KEY_TIME));
-    float lat = cursor.getFloat(cursor.getColumnIndex(KEY_LAT));
     float lng = cursor.getFloat(cursor.getColumnIndex(KEY_LNG));
-    DataTelemetry result = new DataTelemetry(t, lat, lng);
+    float lat = cursor.getFloat(cursor.getColumnIndex(KEY_LAT));
+    DataTelemetry result = new DataTelemetry(t, lng, lat);
     return result;
 }
 
@@ -156,14 +177,15 @@ private static class ITesaDBOpenHelper extends SQLiteOpenHelper {
         KEY_TIME + " long," +
         KEY_XB   + " float," +
         KEY_YB   + " float," +
-        KEY_ZB   + " float" +
+        KEY_ZB   + " float," +
+        KEY_ABSB   + " float" +
         ");";
 
     private static final String DATABASE_TEL_CREATE = "create table " + DB_TABLE_TEL + " (" +
         KEY_ID   + " integer primary key autoincrement not null, " +
         KEY_TIME + " long," +
-        KEY_LAT  + " float," +
-        KEY_LNG  + " float" +
+        KEY_LNG  + " float," +
+        KEY_LAT  + " float" +
         ");";
 
     

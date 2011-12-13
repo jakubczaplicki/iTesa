@@ -16,6 +16,9 @@
 
 package com.funellites.iTesa;
 
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 import android.content.Context;
@@ -26,6 +29,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -69,7 +73,7 @@ public class GraphView extends View {
 
    // load background image as a Bitmap instead of a Drawable b/c
    // we don't need to transform it and it's faster to draw this way
-   mBackgroundImage = BitmapFactory.decodeResource(r, R.drawable.grav);
+   mBackgroundImage = BitmapFactory.decodeResource(r, R.drawable.magearth);
    }
 
    public void destroy() {

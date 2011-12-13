@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    > 
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/linear"
-    android:orientation="vertical"
-    android:layout_width="wrap_content"
-    android:layout_height="fill_parent"
-    >
+ <ImageView  
+    android:id="@+id/image"
+    android:layout_width="fill_parent" 
+    android:layout_height="fill_parent" 
+    android:scaleType="center"
+    android:src="@drawable/topomap" 
+/>
+
 <TextView  
     android:id="@+id/tB"
     android:text="-------------------------"
@@ -21,6 +19,9 @@
     android:textSize="16sp"
     android:editable="true"
     android:singleLine="true"
+    android:layout_gravity="center_horizontal|bottom"
+     android:background="#AA000000"
+    android:textColor="#ffffffff"    
     />    
 <TextView  
     android:id="@+id/nB"
@@ -100,13 +101,5 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
 />
-</LinearLayout>
 
-<com.funellites.iTesa.GraphView
-    android:id="@+id/XYPlot"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:layout_toRightOf="@id/linear"
-    title="XYPlot"/>
-
-</RelativeLayout>
+</merge>
