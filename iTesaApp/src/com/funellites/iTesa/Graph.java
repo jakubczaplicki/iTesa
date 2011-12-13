@@ -42,7 +42,7 @@ public class Graph {
    /** Draw a semi-transparent bitmap (PNG), later put it on top of the contour map of the Earth*/
    private static int[] createAtlas() 
    {
-        int[] colors = new int[WIDTH * HEIGHT];
+        int[] colors = new int[(WIDTH+1) * (HEIGHT+1)];
         DataMagnetometer dataMag = new DataMagnetometer();
         DataTelemetry dataPos = new DataTelemetry();
        
@@ -50,7 +50,7 @@ public class Graph {
         long rowsPos = dbAdapter.getNoOfRowsTelemetry();
 
         for (int x=0; x < ( WIDTH * HEIGHT ); x++) {
-            colors[x] = (255 << 24) | (255 << 16) | (255 << 8) | 255;		
+            colors[x] = (0 << 24) | (255 << 16) | (255 << 8) | 255;		
         }
         
         if ( ( rowsMag > 1 ) && ( rowsPos > 1 ) )
@@ -71,7 +71,7 @@ public class Graph {
                 int x = (int) (dataPos.lng * ( (double) WIDTH / 360.0 ) );
                 int y = (int) (dataPos.lat * ( (double) HEIGHT / 180.0 ) );
                 colors[y * WIDTH + x] = (a << 24) | (r << 16) | (g << 8) | b;
-                Log.d(TAG, "Lng,lat:("+ dataPos.lng +"," + dataPos.lat +") Pixels:(" + x + "," + y + "), Babs: " + dataMag.abs + " r:" + r);
+                //Log.d(TAG, "Lng,lat:("+ dataPos.lng +"," + dataPos.lat +") Pixels:(" + x + "," + y + "), Babs: " + dataMag.abs + " r:" + r);
             }
         }
        /*
