@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.os.Environment;
 import android.util.Log;
@@ -28,6 +29,10 @@ import android.util.Log;
 public class Graph {
 	public final static String TAG = "iTesa";
 
+    private static final String KEY_LAT     = "lat";
+    private static final String KEY_LNG     = "lng";
+    private static final String KEY_ABSB    = "absB";
+	
     static DBAdapter dbAdapter;
 	
     public Graph(DBAdapter _dbAdapter) 
@@ -43,38 +48,45 @@ public class Graph {
    private static int[] createAtlas() 
    {
         int[] colors = new int[(WIDTH+1) * (HEIGHT+1)];
-        DataMagnetometer dataMag = new DataMagnetometer();
-        DataTelemetry dataPos = new DataTelemetry();
-       
-        long rowsMag = dbAdapter.getNoOfRowsMagnetometer();
-        long rowsPos = dbAdapter.getNoOfRowsTelemetry();
+        //DataMagnetometer dataMag = new DataMagnetometer();
+        //DataTelemetry dataPos = new DataTelemetry();
+        //long rowsMag = dbAdapter.getNoOfRowsMagnetometer();
+        //long rowsPos = dbAdapter.getNoOfRowsTelemetry();
 
+        long lastRow = dbAdapter.getLastCursor();
+
+        
         for (int x=0; x < ( WIDTH * HEIGHT ); x++) {
             colors[x] = (0 << 24) | (255 << 16) | (255 << 8) | 255;		
         }
-        
-        if ( ( rowsMag > 1 ) && ( rowsPos > 1 ) )
-        {
-            for (long rowPos = 1; (rowPos < rowsPos); rowPos++) 
+
+            Cursor cursor = dbAdapter.getDataTelemetry( lastRow );
+            
+            if (cursor.moveToFirst())
             {
-                long rowMag = rowsMag - 1;
-                // TODO: optimise SQL query - use one to get the data that has not been shown/analysed yet
-                // (no idea how yet)
-    		    dataMag = dbAdapter.getDataMagnetometer( rowMag );
-    		    dataPos = dbAdapter.getDataTelemetry( rowPos );
-    		    // TODO: based on position timestamp, compute linear interpolation of the magnetometer data
-    		    // TODO: scale colors based on magnetometer reading
-                int r = (int) (dataMag.abs * 255 / 100);
-                int g = (int) (dataMag.abs * 255 / 100);
-                int b = 255 - Math.min(r, g);
-                int a = 255; //Math.max(r, g);
-                int x = (int) (dataPos.lng * ( (double) WIDTH / 360.0 ) );
-                int y = (int) (dataPos.lat * ( (double) HEIGHT / 180.0 ) );
-                colors[y * WIDTH + x] = (a << 24) | (r << 16) | (g << 8) | b;
-                //Log.d(TAG, "Lng,lat:("+ dataPos.lng +"," + dataPos.lat +") Pixels:(" + x + "," + y + "), Babs: " + dataMag.abs + " r:" + r);
+            	do 
+            	{
+            	    float lng = cursor.getFloat(cursor.getColumnIndex(KEY_LNG));
+            	    float lat = cursor.getFloat(cursor.getColumnIndex(KEY_LAT));
+            	    float absB = cursor.getFloat(cursor.getColumnIndex(KEY_ABSB));
+
+                    int r = (int) ( (double) absB * 255.0 / 100.0);
+                    int g = (int) ( (double) absB * 255.0 / 100.0);
+                    int b = 255 - Math.min(r, g);
+                    int a = 255;
+                    int x = (int) ( (double) lng * ( (double) WIDTH / 360.0 ) );
+                    int y = (int) ( (double) lat * ( (double) HEIGHT / 180.0 ) );
+                    
+                    if ((y * WIDTH + x) < (WIDTH * HEIGHT) )
+                        colors[y * WIDTH + x] = (a << 24) | (r << 16) | (g << 8) | b;
+                    else
+                    	Log.d(TAG,"Array out of bounds !!");
+            	} while(cursor.moveToNext());
+            	dbAdapter.updateCursors( cursor.getPosition() );
+            	Log.d(TAG, "Last cursor pos: "+ cursor.getPosition());
             }
-        }
-       /*
+        
+        /*
        for (int y = 0; y < HEIGHT; y++) {
            for (int x = 0; x < WIDTH; x++) {
                int r = x * 255 / (WIDTH - 1);

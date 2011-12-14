@@ -32,16 +32,19 @@ public class DBAdapter {
 public final static String TAG = "iTesa";
 private static final int    DB_VERSION = 1;
 private static final String DB_NAME    = "itesadb.sqlite";
+private static final String DB_TABLE     = "telemetry";
 private static final String DB_TABLE_MAG = "magneticfield";
-private static final String DB_TABLE_TEL = "telemetry";
-public static final String KEY_ID      = "_id";
-public static final String KEY_TIME    = "time";
-public static final String KEY_LAT     = "lat";
-public static final String KEY_LNG     = "lng";
-public static final String KEY_XB      = "xB";
-public static final String KEY_YB      = "yB";
-public static final String KEY_ZB      = "zB";
-public static final String KEY_ABSB      = "absB";
+private static final String DB_TABLE_POS = "position";
+private static final String DB_TABLE_CUR = "cursors";
+private static final String KEY_ID      = "_id";
+private static final String KEY_TIME    = "time";
+private static final String KEY_LAT     = "lat";
+private static final String KEY_LNG     = "lng";
+private static final String KEY_XB      = "xB";
+private static final String KEY_YB      = "yB";
+private static final String KEY_ZB      = "zB";
+private static final String KEY_ABSB    = "absB";
+private static final String KEY_CUR     = "cursor";
 
 public boolean isOpen = false;
 
@@ -65,6 +68,45 @@ public void open() throws SQLiteException {
         db = dbHelper.getReadableDatabase();
     }
     isOpen = true;
+    insertDataCursors();
+}
+
+/*** Telemetry database ***/
+
+public long insertDataTelemetry(DataTelemetry dataPos, DataMagnetometer dataMag) {
+    ContentValues newValues = new ContentValues(); // Create a new row of values to insert
+    newValues.put( KEY_TIME, dataPos.t );
+    newValues.put( KEY_LNG,  dataPos.lng );
+    newValues.put( KEY_LAT,  dataPos.lat );
+    newValues.put( KEY_XB,   dataMag.x );
+    newValues.put( KEY_YB,   dataMag.y );
+    newValues.put( KEY_ZB,   dataMag.z );
+    newValues.put( KEY_ABSB, dataMag.abs );    
+    
+    return db.insert(DB_TABLE, null, newValues); // Insert the row
+}
+
+public boolean removeDataTelemetry(long _rowIndex) {
+    // Remove a row from DB based on its index
+    return db.delete(DB_TABLE, KEY_ID + "=" + _rowIndex, null) > 0;
+}
+
+public long getNoOfRowsTelemetry() {
+    String sql = "SELECT COUNT(*) FROM " + DB_TABLE;
+    SQLiteStatement statement = db.compileStatement(sql);
+    long count = statement.simpleQueryForLong();
+    return count;
+}
+
+public Cursor getDataTelemetry(long _rowIndex) throws SQLException {
+    Cursor cursor = db.query(true, DB_TABLE, 
+                             new String[] {KEY_ID, KEY_TIME, KEY_LNG, KEY_LAT, KEY_ABSB},
+                             KEY_ID + ">=" + _rowIndex, null, null, null, null, null);
+    if ((cursor.getCount() == 0) || !cursor.moveToFirst()) {
+        throw new SQLException("No data item found for row: " + _rowIndex);
+    }
+
+    return cursor;
 }
 
 /*** Magnetometer database ***/
@@ -83,17 +125,6 @@ public boolean removeDataMagnetometer(long _rowIndex) {
     // Remove a row from DB based on its index
     return db.delete(DB_TABLE_MAG, KEY_ID + "=" + _rowIndex, null) > 0;
 }
-
-/* We don't need to update rows in DB
-public boolean updateData(long _rowIndex, DataMagnetometer data) {
-    ContentValues newValues = new ContentValues();
-    newValues.put( KEY_TIME, data.t );
-    newValues.put( KEY_XB,   data.x );
-    newValues.put( KEY_YB,   data.y );
-    newValues.put( KEY_ZB,   data.z );
-    return db.update(DB_TABLE, newValues, KEY_ID + "=" + _rowIndex, null) > 0;  
-}
-*/
 
 public long getNoOfRowsMagnetometer() {
     String sql = "SELECT COUNT(*) FROM " + DB_TABLE_MAG;
@@ -122,31 +153,31 @@ public DataMagnetometer getDataMagnetometer(long _rowIndex) throws SQLException 
 }
 
 
-/*** Telemetry database ***/
+/*** Position database ***/
 
-public long insertDataTelemetry(DataTelemetry data) {
+public long insertDataPosition(DataTelemetry data) {
     ContentValues newValues = new ContentValues(); // Create a new row of values to insert
     newValues.put( KEY_TIME, data.t );
     newValues.put( KEY_LNG,  data.lng );
     newValues.put( KEY_LAT,  data.lat );
-    return db.insert(DB_TABLE_TEL, null, newValues); // Insert the row
+    return db.insert(DB_TABLE_POS, null, newValues); // Insert the row
 }
 
-public boolean removeDataTelemetry(long _rowIndex) {
+public boolean removeDataPosition(long _rowIndex) {
     // Remove a row from DB based on its index
-    return db.delete(DB_TABLE_TEL, KEY_ID + "=" + _rowIndex, null) > 0;
+    return db.delete(DB_TABLE_POS, KEY_ID + "=" + _rowIndex, null) > 0;
 }
 
-public long getNoOfRowsTelemetry() {
-    String sql = "SELECT COUNT(*) FROM " + DB_TABLE_TEL;
+public long getNoOfRowsPosition() {
+    String sql = "SELECT COUNT(*) FROM " + DB_TABLE_POS;
     SQLiteStatement statement = db.compileStatement(sql);
     long count = statement.simpleQueryForLong();
     return count;
 }
 
 //Return data element from magnetometer DB
-public DataTelemetry getDataTelemetry(long _rowIndex) throws SQLException {
-    Cursor cursor = db.query(true, DB_TABLE_TEL, 
+public DataTelemetry getDataPosition(long _rowIndex) throws SQLException {
+    Cursor cursor = db.query(true, DB_TABLE_POS, 
                              new String[] {KEY_ID, KEY_TIME, KEY_LNG, KEY_LAT},
                              KEY_ID + "=" + _rowIndex, null, null, null, null, null);
     if ((cursor.getCount() == 0) || !cursor.moveToFirst()) {
@@ -159,6 +190,39 @@ public DataTelemetry getDataTelemetry(long _rowIndex) throws SQLException {
     return result;
 }
 
+/*** Cursors database ***/
+
+
+//Add initial value
+public long insertDataCursors() {
+    ContentValues newValues = new ContentValues();
+    newValues.put( KEY_CUR,  0 );
+    return db.insert(DB_TABLE_CUR, null, newValues);
+}
+
+//Update values with the most recent cursor positions
+public boolean updateCursors(int cursor) {
+    ContentValues newValues = new ContentValues();
+    newValues.put( KEY_CUR, cursor );
+    return db.update(DB_TABLE_CUR, newValues, KEY_ID + "=0", null) > 0;  
+}
+
+//Return last cursor
+public long getLastCursor() throws SQLException {
+	long ret = 0;
+    Cursor cursor = db.query(true, DB_TABLE_CUR, 
+                             new String[] {KEY_ID, KEY_CUR},
+                             KEY_ID + "=" + 0, null, null, null, null, null);
+    if ((cursor.getCount() == 0) || !cursor.moveToFirst()) 
+    {
+        ret = 0;
+    }
+    else
+    {
+    	ret = cursor.getLong(cursor.getColumnIndex(KEY_CUR));
+    }
+    return ret;
+}
 
 /*** Helper ***/
 
@@ -172,6 +236,17 @@ private static class ITesaDBOpenHelper extends SQLiteOpenHelper {
     }
 
     // SQL Statement to create a new database.
+    private static final String DATABASE_CREATE = "create table " + DB_TABLE + " (" +
+         KEY_ID   + " integer primary key autoincrement not null, " +
+         KEY_TIME + " long," +
+         KEY_LNG  + " float," +
+         KEY_LAT  + " float," +
+         KEY_XB   + " float," +
+         KEY_YB   + " float," +
+         KEY_ZB   + " float," +
+         KEY_ABSB   + " float" +
+         ");";
+    
     private static final String DATABASE_MAG_CREATE = "create table " + DB_TABLE_MAG + " (" +
         KEY_ID   + " integer primary key autoincrement not null, " +
         KEY_TIME + " long," +
@@ -181,19 +256,27 @@ private static class ITesaDBOpenHelper extends SQLiteOpenHelper {
         KEY_ABSB   + " float" +
         ");";
 
-    private static final String DATABASE_TEL_CREATE = "create table " + DB_TABLE_TEL + " (" +
+    private static final String DATABASE_POS_CREATE = "create table " + DB_TABLE_POS + " (" +
         KEY_ID   + " integer primary key autoincrement not null, " +
         KEY_TIME + " long," +
         KEY_LNG  + " float," +
         KEY_LAT  + " float" +
         ");";
 
-    
+    private static final String DATABASE_CUR_CREATE = "create table " + DB_TABLE_CUR + " (" +
+        KEY_ID   + " integer primary key autoincrement not null, " +
+        KEY_CUR + " long" +
+        ");";
+
     protected void dropAndCreate(SQLiteDatabase _db) {
-        _db.execSQL("drop table if exists " + DB_TABLE_MAG + ";");
+        _db.execSQL("drop table if exists " + DB_TABLE + ";");
+        _db.execSQL(DATABASE_CREATE);
+    	/*_db.execSQL("drop table if exists " + DB_TABLE_MAG + ";");
         _db.execSQL(DATABASE_MAG_CREATE);
-        _db.execSQL("drop table if exists " + DB_TABLE_TEL + ";");
-        _db.execSQL(DATABASE_TEL_CREATE);
+        _db.execSQL("drop table if exists " + DB_TABLE_POS + ";");
+        _db.execSQL(DATABASE_POS_CREATE);*/
+        _db.execSQL("drop table if exists " + DB_TABLE_CUR + ";");
+        _db.execSQL(DATABASE_CUR_CREATE);
     }
 
     @Override
@@ -202,8 +285,10 @@ private static class ITesaDBOpenHelper extends SQLiteOpenHelper {
               _oldVersion + " to " +
               _newVersion + ", which will destroy all old data");
         // Drop the old table.
-        _db.execSQL("DROP TABLE IF EXISTS " + DB_TABLE_MAG);
-        _db.execSQL("DROP TABLE IF EXISTS " + DB_TABLE_TEL);
+        _db.execSQL("DROP TABLE IF EXISTS " + DB_TABLE);
+        /*_db.execSQL("DROP TABLE IF EXISTS " + DB_TABLE_MAG);
+        _db.execSQL("DROP TABLE IF EXISTS " + DB_TABLE_POS);*/
+        _db.execSQL("DROP TABLE IF EXISTS " + DB_TABLE_CUR);
         // Create a new one.
         onCreate(_db);
         }

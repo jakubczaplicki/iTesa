@@ -24,17 +24,17 @@ import android.hardware.SensorManager;
 import android.util.Log;
 
 /** All values are in micro-Tesla (uT) and measure the ambient magnetic field in the X, Y and Z axis. */ 
-public class Magnetometer extends DataItem implements SensorEventListener 
+public class Magnetometer implements SensorEventListener 
 {
     private SensorManager sensorManager = null; 
-    private Magnetometer.Callback cb = null;
     public  long n = 0;
-    public  long t = 0;
     public  long delay = 0;
+    private SMA  sma;
+    public DataMagnetometer dataMag = null;
 
-    public Magnetometer(Context context, Magnetometer.Callback cb) 
+    public Magnetometer(Context context) 
     {
-        this.cb=cb;
+        sma  = new SMA(100);
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         start();
     }
@@ -42,38 +42,39 @@ public class Magnetometer extends DataItem implements SensorEventListener
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) { }
 
+    long TimeNew = System.nanoTime();
+    long TimeOld = TimeNew;
+
     @Override
     public void onSensorChanged(SensorEvent event) 
     {
-        long TimeNew = System.nanoTime();
-        long TimeOld = TimeNew;
-
         synchronized (this) 
         {
             switch (event.sensor.getType()) 
             { 
-               case Sensor.TYPE_MAGNETIC_FIELD:
-               if ( n >= Long.MAX_VALUE - 1 ) { n = 0; }
-               n++;
-               if (cb!=null) 
-               {
-                  cb.addDataMagnetometer( n,
-                              event.timestamp,
-                              event.values[0], 
-                              event.values[1],
-                              event.values[2] );
-               }
-               t = event.timestamp;
-               TimeNew = event.timestamp;
-               delay = (long)((TimeNew - TimeOld)/1000000);
-               TimeOld = TimeNew;
-               break;
+                case Sensor.TYPE_MAGNETIC_FIELD:
+                if ( n >= Long.MAX_VALUE - 1 ) { n = 0; }
+                n++;
+                DataMagnetometer data = new DataMagnetometer( event.timestamp,
+                                                              event.values[0], 
+                                                              event.values[1],
+                                                              event.values[2] );
+          	    sma.addData( data.abs );
+        	    data.abs = sma.getAvg();
+        	   
+        	    dataMag = data; // public 
+               
+                TimeNew = event.timestamp;
+                delay = (long)((TimeNew - TimeOld)/1000000);
+                TimeOld = TimeNew;
+                break;
             }
-         }
-      }
+        }
+    }
 
     public void start() 
     {
+    	Log.d("iTesa", "Magnetometer.start() - register magnetometer listener");
         sensorManager.registerListener( this,
                     sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
                     SensorManager.SENSOR_DELAY_FASTEST);
@@ -81,13 +82,36 @@ public class Magnetometer extends DataItem implements SensorEventListener
 	   
     public void stop() 
     {
-        Log.d("iTesa", "Magnetometer.close() - unregister magnetometer listener");
+        Log.d("iTesa", "Magnetometer.stop() - unregister magnetometer listener");
         sensorManager.unregisterListener(this,
         sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD));
     }
 
-    public interface Callback 
-    {
-        void addDataMagnetometer(long n, long t, float bx, float by, float bz);
+    /*** Simple Moving Average ***/
+    class SMA {
+        private int   size; // TODO make this as an option/setting
+        private float total = 0f;
+        private int   index = 0;
+        private float samples[];
+        
+        /** Construct and set Simple Moving Average */
+        public SMA(int _size) {
+           size = _size;
+           samples = new float[size];
+           for (int i = 0; i < size; i++) samples[i] = 0f;
+        }
+
+        /** Add data to average */
+        public void addData(float x) 
+        {
+            total -= samples[index];
+            samples[index] = x;
+            total += x;
+            if (++index == size) index = 0;
+        }
+        
+        public float getAvg() {
+           return total / size;
+         }
     }
 }

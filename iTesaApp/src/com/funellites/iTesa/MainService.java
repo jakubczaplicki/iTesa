@@ -11,12 +11,11 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
-public class MainService extends Service implements Magnetometer.Callback {
+public class MainService extends Service {
     public final static String TAG = "iTesa";
     public static long instance = 0;
     private Magnetometer magnetometer;
     private Queue<DataMagnetometer> dataQueue = null;
-    private SMA       sma;
     private DBAdapter dbAdapter;
     private Graph     graph;
 
@@ -34,9 +33,8 @@ public class MainService extends Service implements Magnetometer.Callback {
     public void onCreate()
     {
         nManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        magnetometer = new Magnetometer(this, this);
+        magnetometer = new Magnetometer(this);
         dataQueue    = new LinkedList<DataMagnetometer>();
-        sma          = new SMA(100);
         dbAdapter    = new DBAdapter(this);
         dbAdapter.open();
         graph = new Graph( dbAdapter );
@@ -48,10 +46,10 @@ public class MainService extends Service implements Magnetometer.Callback {
     public void onDestroy() 
     {
         RUNNING = false;
-        threadSaveDataMag.threadRunning  = false;
+        //threadSaveDataMag.threadRunning  = false;
         threadSaveDataTel.threadRunning  = false;
         threadUpdateBitmap.threadRunning  = false;
-        try { threadSaveDataMag.join(); } catch (InterruptedException e) { e.printStackTrace(); }
+        //try { threadSaveDataMag.join(); } catch (InterruptedException e) { e.printStackTrace(); }
         try { threadSaveDataTel.join(); } catch (InterruptedException e) { e.printStackTrace(); }
         try { threadUpdateBitmap.join(); } catch (InterruptedException e) { e.printStackTrace(); }
         
@@ -74,25 +72,18 @@ public class MainService extends Service implements Magnetometer.Callback {
         // We want this service to continue running until it is explicitly stopped, so return sticky.
         return START_STICKY;
     }
-
-    public void addDataMagnetometer(long n, long t, float bx, float by, float bz)
-    {
-        //Log.i( TAG, "#n: " + n);
-        DataMagnetometer dataItem = new DataMagnetometer(t, bx, by, bz);
-        dataQueue.add(dataItem);
-    }
     
     /*** Thread functionality - saving data ***/
-    private ThreadSaveDataMag threadSaveDataMag; // save magnetometer data
-    private ThreadSaveDataTel threadSaveDataTel; //save telemetry data
+    //private ThreadSaveDataMag threadSaveDataMag; // save magnetometer data
+    private ThreadSaveTelemetry threadSaveDataTel; //save telemetry data
     private ThreadUpdateBitmap threadUpdateBitmap;
 
     /** Creates the thread (this method is invoked from onCreate()) */
     private void makeThread() {
-       threadSaveDataMag = new ThreadSaveDataMag();
-       threadSaveDataTel = new ThreadSaveDataTel();
+       //threadSaveDataMag = new ThreadSaveDataMag();
+       threadSaveDataTel = new ThreadSaveTelemetry();
        threadUpdateBitmap = new ThreadUpdateBitmap();
-       threadSaveDataMag.start();
+       //threadSaveDataMag.start();
        threadSaveDataTel.start();
        threadUpdateBitmap.start();
     }
@@ -112,33 +103,29 @@ public class MainService extends Service implements Magnetometer.Callback {
           while (threadRunning) 
           {
               //Log.d("iTesa", "elements in queue:" + dataQueue.size());
-              if( !dataQueue.isEmpty() )
+              //if( !dataQueue.isEmpty() )
+        	  if ( magnetometer.dataMag != null )
               {
                   Log.d(TAG, "Storing magnetic data");
-            	  DataMagnetometer tmp = new DataMagnetometer();
-            	  for (int i=0;  i < dataQueue.size(); i++)
-            	  {
-            	      tmp = dataQueue.remove();
-                      sma.addData( tmp.abs );
-            	  }
-            	  tmp.abs = sma.getAvg();
-            	  status = dbAdapter.insertDataMagnetometer( tmp );
+
+            	  status = dbAdapter.insertDataMagnetometer( magnetometer.dataMag );
          	      if ( -1 == status )
          	          Log.d("iTesa", "db.insert failed");            	 
-            	  //Log.d("iTesa", "db.insert status :" + status);
+
               }
               try { Thread.sleep(2000); } catch(Exception e) { e.printStackTrace(); }
+        	  //Log.d("iTesa", "db.insert status :" + status);
           }
        }
     }
 
     /** Thread class for saving position data to the sqlite db */
-    class ThreadSaveDataTel extends Thread 
+    class ThreadSaveTelemetry extends Thread 
     {
         public boolean threadRunning = true;
         private long status = 0;
 
-        public ThreadSaveDataTel() {}
+        public ThreadSaveTelemetry() {}
 
         @Override
         public void run() 
@@ -146,14 +133,16 @@ public class MainService extends Service implements Magnetometer.Callback {
         	Log.d("iTesa", "Run: ThreadSaveDataTel()");
             while (threadRunning) 
             {
-            	Log.d(TAG, "Storing simulated position data");
+                try { Thread.sleep(2000); } catch(Exception e) { e.printStackTrace(); }
+
+            	Log.d(TAG, "Storing simulated position data + sensor data");
             	/* TODO: add code to fetch data from the telemetry file */
-                DataTelemetry data = new DataTelemetry( magnetometer.t, magnetometer.n );
-                status = dbAdapter.insertDataTelemetry(data);
+                DataTelemetry dataTelemetry = new DataTelemetry( magnetometer.dataMag.t , magnetometer.n );
+                DataMagnetometer dataMagnetometer = magnetometer.dataMag;
+
+                status = dbAdapter.insertDataTelemetry(dataTelemetry, dataMagnetometer);
                 if ( -1 == status )
          	        Log.d("iTesa", "db.insert failed");
-                
-                try { Thread.sleep(2000); } catch(Exception e) { e.printStackTrace(); }
             }
         }
     }
@@ -169,9 +158,9 @@ public class MainService extends Service implements Magnetometer.Callback {
             Log.d("iTesa", "Run: ThreadUpdateBitmap()");
             while (threadRunning) 
             {
+                try { Thread.sleep(30000); } catch(Exception e) { e.printStackTrace(); }
             	Log.d(TAG, "Creating bitmap");
                 graph.createBitmap();
-                try { Thread.sleep(30000); } catch(Exception e) { e.printStackTrace(); }
             }
        }
     }
@@ -187,31 +176,4 @@ public class MainService extends Service implements Magnetometer.Callback {
         nManager.notify(1, notification);
     }
     
-    /*** Simple Moving Average ***/
-    class SMA {
-        private int   size; // TODO make this as an option/setting
-        private float total = 0f;
-        private int   index = 0;
-        private float samples[];
-        
-        /** Construct and set Simple Moving Average */
-        public SMA(int _size) {
-           size = _size;
-           samples = new float[size];
-           for (int i = 0; i < size; i++) samples[i] = 0f;
-        }
-
-        /** Add data to average */
-        public void addData(float x) 
-        {
-            total -= samples[index];
-            samples[index] = x;
-            total += x;
-            if (++index == size) index = 0;
-        }
-        
-        public float getAvg() {
-           return total / size;
-         }
-    }
 }
