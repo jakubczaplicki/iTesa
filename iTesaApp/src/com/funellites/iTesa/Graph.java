@@ -60,31 +60,31 @@ public class Graph {
             colors[x] = (0 << 24) | (255 << 16) | (255 << 8) | 255;		
         }
 
-            Cursor cursor = dbAdapter.getDataTelemetry( lastRow );
+        Cursor cursor = dbAdapter.getDataTelemetry( lastRow );
+     	Log.d(TAG, "Last row was : "+ lastRow);
             
-            if (cursor.moveToFirst())
-            {
-            	do 
-            	{
-            	    float lng = cursor.getFloat(cursor.getColumnIndex(KEY_LNG));
-            	    float lat = cursor.getFloat(cursor.getColumnIndex(KEY_LAT));
-            	    float absB = cursor.getFloat(cursor.getColumnIndex(KEY_ABSB));
-
-                    int r = (int) ( (double) absB * 255.0 / 100.0);
-                    int g = (int) ( (double) absB * 255.0 / 100.0);
-                    int b = 255 - Math.min(r, g);
-                    int a = 255;
-                    int x = (int) ( (double) lng * ( (double) WIDTH / 360.0 ) );
-                    int y = (int) ( (double) lat * ( (double) HEIGHT / 180.0 ) );
+        if (cursor.moveToFirst())
+        {
+         	do 
+          	{
+           	    float lng = cursor.getFloat(cursor.getColumnIndex(KEY_LNG));
+           	    float lat = cursor.getFloat(cursor.getColumnIndex(KEY_LAT));
+           	    float absB = cursor.getFloat(cursor.getColumnIndex(KEY_ABSB));
+                int r = (int) ( (double) absB * 255.0 / 100.0);
+                int g = (int) ( (double) absB * 255.0 / 100.0);
+                int b = 255 - Math.min(r, g);
+                int a = 255;
+                int x = (int) ( (double) lng * ( (double) WIDTH / 360.0 ) );
+                int y = (int) ( (double) lat * ( (double) HEIGHT / 180.0 ) );
                     
-                    if ((y * WIDTH + x) < (WIDTH * HEIGHT) )
-                        colors[y * WIDTH + x] = (a << 24) | (r << 16) | (g << 8) | b;
-                    else
-                    	Log.d(TAG,"Array out of bounds !!");
-            	} while(cursor.moveToNext());
-            	dbAdapter.updateCursors( cursor.getPosition() );
-            	Log.d(TAG, "Last cursor pos: "+ cursor.getPosition());
-            }
+                if ((y * WIDTH + x) < (WIDTH * HEIGHT) )
+                    colors[y * WIDTH + x] = (a << 24) | (r << 16) | (g << 8) | b;
+                else
+                	Log.d(TAG,"Array out of bounds !!");
+          	} while(cursor.moveToNext());
+          	dbAdapter.updateCursors( lastRow + (long) cursor.getPosition() );
+           	Log.d(TAG, "Last cursor pos: "+ (lastRow + cursor.getPosition()) );
+        }
         
         /*
        for (int y = 0; y < HEIGHT; y++) {

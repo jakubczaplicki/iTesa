@@ -201,10 +201,10 @@ public long insertDataCursors() {
 }
 
 //Update values with the most recent cursor positions
-public boolean updateCursors(int cursor) {
+public boolean updateCursors(long cursor) {
     ContentValues newValues = new ContentValues();
     newValues.put( KEY_CUR, cursor );
-    return db.update(DB_TABLE_CUR, newValues, KEY_ID + "=0", null) > 0;  
+    return db.update(DB_TABLE_CUR, newValues, KEY_ID + "=1", null) > 0;  
 }
 
 //Return last cursor
@@ -212,7 +212,7 @@ public long getLastCursor() throws SQLException {
 	long ret = 0;
     Cursor cursor = db.query(true, DB_TABLE_CUR, 
                              new String[] {KEY_ID, KEY_CUR},
-                             KEY_ID + "=" + 0, null, null, null, null, null);
+                             KEY_ID + "=1", null, null, null, null, null);
     if ((cursor.getCount() == 0) || !cursor.moveToFirst()) 
     {
         ret = 0;
