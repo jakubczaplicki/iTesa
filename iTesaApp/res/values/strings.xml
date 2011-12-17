@@ -2,6 +2,4 @@
 <resources>
     <string name="app_name">iTesa</string>
     <string name="desc">Ionspheric Tesla Atlas</string>
-    
-    <string name="menu_preferences">Preferences</string>
 </resources>

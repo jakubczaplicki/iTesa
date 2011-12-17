@@ -17,12 +17,16 @@
 package com.funellites.iTesa;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.util.Log;
 
@@ -32,37 +36,53 @@ public class Graph {
     private static final String KEY_LAT     = "lat";
     private static final String KEY_LNG     = "lng";
     private static final String KEY_ABSB    = "absB";
+    
+    private static final String FILENAME    = "atlas.png";
 	
     static DBAdapter dbAdapter;
 	
-    public Graph(DBAdapter _dbAdapter) 
+    public Graph(DBAdapter _dbAdapter ) 
     {
         dbAdapter = _dbAdapter;
     }
 
-   private static final int WIDTH = 640;
-   private static final int HEIGHT = 480;
-   private static final int STRIDE = 640;   // must be >= WIDTH
+   private static final int WIDTH = 1440;
+   private static final int HEIGHT = 720;
+   private static final int STRIDE = WIDTH;   // must be >= WIDTH
    
-   /** Draw a semi-transparent bitmap (PNG), later put it on top of the contour map of the Earth*/
-   private static int[] createAtlas() 
-   {
-        int[] colors = new int[(WIDTH+1) * (HEIGHT+1)];
-        //DataMagnetometer dataMag = new DataMagnetometer();
-        //DataTelemetry dataPos = new DataTelemetry();
-        //long rowsMag = dbAdapter.getNoOfRowsMagnetometer();
-        //long rowsPos = dbAdapter.getNoOfRowsTelemetry();
-
-        long lastRow = dbAdapter.getLastCursor();
-
-        
-        for (int x=0; x < ( WIDTH * HEIGHT ); x++) {
-            colors[x] = (0 << 24) | (255 << 16) | (255 << 8) | 255;		
-        }
-
+    public void createBitmap() 
+    {
+        //db related
+    	long lastRow = dbAdapter.getLastCursor();
         Cursor cursor = dbAdapter.getDataTelemetry( lastRow );
      	Log.d(TAG, "Last row was : "+ lastRow);
-            
+
+        // load png bitmap
+    	String path = Environment.getExternalStorageDirectory().toString();
+        File file = new File(path + "/" + FILENAME);
+
+        Bitmap bitmap = null;
+		try {
+			InputStream inStream = new FileInputStream(file);
+			bitmap = BitmapFactory.decodeStream(inStream).copy(Bitmap.Config.ARGB_8888, true);
+		} catch (FileNotFoundException e1) {
+			Log.d(TAG,"File not found - create new !");
+			e1.printStackTrace();
+			try {
+				File fileOrig = new File(path + "/" + "earth.png");
+				InputStream inStream;
+				inStream = new FileInputStream(fileOrig);
+				bitmap = BitmapFactory.decodeStream(inStream).copy(Bitmap.Config.ARGB_8888, true);
+			} catch (FileNotFoundException e) {
+				Log.d(TAG,"Can't even create new bitmap !");
+				e.printStackTrace();
+			}
+		}
+		
+		// modify bitmap based on data from sqlite
+     	int[] colors = new int[ WIDTH * HEIGHT ];
+		bitmap.getPixels(colors, 0, STRIDE, 0, 0, WIDTH , HEIGHT );
+
         if (cursor.moveToFirst())
         {
          	do 
@@ -74,8 +94,8 @@ public class Graph {
                 int g = (int) ( (double) absB * 255.0 / 100.0);
                 int b = 255 - Math.min(r, g);
                 int a = 255;
-                int x = (int) ( (double) lng * ( (double) WIDTH / 360.0 ) );
-                int y = (int) ( (double) lat * ( (double) HEIGHT / 180.0 ) );
+                int x = (int) ( (double) lng * ( (double) (WIDTH-1) / 360.0 ) );
+                int y = (int) ( (double) lat * ( (double) (HEIGHT-1) / 180.0 ) );
                     
                 if ((y * WIDTH + x) < (WIDTH * HEIGHT) )
                     colors[y * WIDTH + x] = (a << 24) | (r << 16) | (g << 8) | b;
@@ -85,35 +105,15 @@ public class Graph {
           	dbAdapter.updateCursors( lastRow + (long) cursor.getPosition() );
            	Log.d(TAG, "Last cursor pos: "+ (lastRow + cursor.getPosition()) );
         }
+		
+        bitmap.setPixels(colors, 0, STRIDE, 0, 0, WIDTH , HEIGHT );
         
-        /*
-       for (int y = 0; y < HEIGHT; y++) {
-           for (int x = 0; x < WIDTH; x++) {
-               int r = x * 255 / (WIDTH - 1);
-               int g = y * 255 / (HEIGHT - 1);
-               int b = 255 - Math.min(r, g);
-               int a = Math.max(r, g);
-               colors[y * STRIDE + x] = (a << 24) | (r << 16) | (g << 8) | b;
-           }
-       }*/
-       return colors;
-   }
-          
-    private Bitmap mBitmap;
-    private int[]  mColors;
-    public void createBitmap() 
-    {
-        mColors = createAtlas();
-        int[] colors = mColors;
-        mBitmap = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888);
-        mBitmap.setPixels(colors, 0, STRIDE, 0, 0, WIDTH, HEIGHT);
-        String path = Environment.getExternalStorageDirectory().toString();
-        OutputStream outStream = null;
-        File file = new File(path, "atlas.png");
+        Log.d(TAG,path + "/" + FILENAME);
         Log.d(TAG, "Saving png file to " + file);
+        
         try {
-            outStream = new FileOutputStream(file);
-            mBitmap.compress(Bitmap.CompressFormat.PNG, 85, outStream);
+        	OutputStream outStream = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 85, outStream);
             outStream.flush(); 
             outStream.close();
             }

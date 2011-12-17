@@ -16,76 +16,35 @@
 
 package com.funellites.iTesa;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.OutputStream;
-
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.CheckBox;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity implements OnClickListener  {
     public final static String TAG = "iTesa";
-    protected TextView tBTextView;
-    protected TextView nBTextView;
-    protected TextView xBTextView;
-    protected TextView yBTextView;
-    protected TextView zBTextView;
-    protected TextView absBTextView;
-    protected TextView avgBTextView;
-    protected TextView maxBTextView;
-    protected TextView iTextView;
     protected ImageView imageView;
-    protected CheckBox logData_cb;
-
-    DataMagnetometer Blocal = new DataMagnetometer();
-    //GraphView graphView = null;
-
-    static final private int MENU_PREFERENCES = Menu.FIRST; 
-    private static final int SHOW_PREFERENCES = 1;
-    private int updateFreq   = 15000; // ms
+    protected CheckBox startService;
 
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
-        Log.d("iTesa",this.getClass().getName()+":onCreate()");
+        Log.d(TAG,this.getClass().getName()+":onCreate()");
         setContentView(R.layout.main);
 
-        updateFromPreferences(); // load and set preferences
-
-        tBTextView   = (TextView) findViewById(R.id.tB);
-        nBTextView   = (TextView) findViewById(R.id.nB);
-        xBTextView   = (TextView) findViewById(R.id.xB);
-        yBTextView   = (TextView) findViewById(R.id.yB);
-        zBTextView   = (TextView) findViewById(R.id.zB);
-        absBTextView = (TextView) findViewById(R.id.absB);
-        maxBTextView = (TextView) findViewById(R.id.maxB);
-        avgBTextView = (TextView) findViewById(R.id.avgB);
-        iTextView    = (TextView) findViewById(R.id.iB);
-        //graphView    = (GraphView)this.findViewById(R.id.XYPlot);
-        imageView    = (ImageView) findViewById(R.id.image);
-        logData_cb   = (CheckBox) findViewById(R.id.logData_cb);
-        logData_cb.setOnClickListener(this);
+        //imageView    = (ImageView) findViewById(R.id.image);
+        startService   = (CheckBox) findViewById(R.id.startService);
+        startService.setOnClickListener(this);
         
-        makeThread(); // start a thread to refresh UI
+        //makeThread(); // start a thread to refresh UI
 
         getWindow().addFlags( WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
                             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
@@ -97,16 +56,17 @@ public class MainActivity extends Activity implements OnClickListener  {
     {
         switch (src.getId()) 
         {
-            case R.id.logData_cb:
-                if (!logData_cb.isChecked()) 
+            case R.id.startService:
+                if (!startService.isChecked()) 
                 {
-                	// FIXME: doesn't seem to stop the service
+                	// FIXME: doesn't seem to stop the service (notification still on)
                     stopService(new Intent(this, MainService.class));
+                    Toast.makeText(getBaseContext(), "Stoping service", Toast.LENGTH_SHORT).show();
                 }
                 else
                 {
                     startService(new Intent(this, MainService.class));
-                    Toast.makeText(getBaseContext(), "Logging state changed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getBaseContext(), "Starting service", Toast.LENGTH_SHORT).show();
                 }
                 break;
         }
@@ -117,7 +77,6 @@ public class MainActivity extends Activity implements OnClickListener  {
     {
         super.onResume();
         Log.d("iTesa", "MainActivity:onResume()");
-        updateFromPreferences();
     }
 
     @Override
@@ -138,107 +97,51 @@ public class MainActivity extends Activity implements OnClickListener  {
         Log.d("iTesa", "MainActivity:onDestroy()");
     }
     
-    /** Updates the text fields on the UI. */
-    private void updateGUI() 
-    {
-        tBTextView.setText("t: " + Blocal.t/1000000 + " ms  ");
-        //nBTextView.setText("n: " + Blocal.n);
-        xBTextView.setText("x: " + Blocal.x + " μT");
-        yBTextView.setText("y: " + Blocal.y + " μT");
-        zBTextView.setText("z: " + Blocal.z + " μT");
-        absBTextView.setText("abs: " + Blocal.abs + " μT");
-        maxBTextView.setText("max: " + Blocal.max + " μT");
-        //avgBTextView.setText("avg: " + Blocal.sma + " μT");
-        // I don't understand this number !! why is it ~53 ms ?
-        // see http://stackoverflow.com/questions/5060628/android-sensor-delay-fastest-isnt-fast-enough
-        //iTextView.setText("smpl.rate: " + magnetometer.delay + " ms");
-        tBTextView.invalidate();
-        xBTextView.invalidate();
-        yBTextView.invalidate();
-        zBTextView.invalidate();
-        absBTextView.invalidate();
-        avgBTextView.invalidate();
-        maxBTextView.invalidate();
-        //iTextView.invalidate();
-    }
-
-    /** Updates the graph on the UI. */
-    private void updateGraph() 
-    {
-    	String path = Environment.getExternalStorageDirectory().toString();
-    	String fname = path+"/atlas.png"; // /mnt/sdcard/atlas.png
-    	//Log.d(TAG, fname);
-    	/*Bitmap bm = BitmapFactory.decodeFile(fname); 
-    	imageView.setImageBitmap(bm);*/ 
-    	
-        //graphView.updateGraph( Blocal.abs );
-    }
-
 /*************************************************************************
  * Thread functionality
  *************************************************************************/
 
-   private GuiThread guiThread;
+    private GuiThread guiThread;
 
-   /** Creates the thread (this method is invoked from onCreate()) */
-   private void makeThread() {
-      Log.d("iTesa", "makeThread()");
-      guiThread = new GuiThread();
-      guiThread.start();
-   }
+    /** Creates the thread (this method is invoked from onCreate()) */
+    private void makeThread()
+    {
+        Log.d("iTesa", "makeThread()");
+        guiThread = new GuiThread();
+        guiThread.start();
+    }
 
-   /** Thread class for refreshing the UI */
-   class GuiThread extends Thread {
-      public boolean threadRunning = true;
+    /** Thread class for refreshing the UI */
+    class GuiThread extends Thread 
+    {
+        public boolean threadRunning = true;
+        public GuiThread() {}
 
-      public GuiThread() {}
-
-      @Override
-      public void run() 
-      {
-         while (threadRunning) 
-         {
-            //updateGUI();
-            updateGraph();
-            try 
+        @Override
+        public void run() 
+        {
+            int n=1;
+    	    while (true) 
             {
-               Thread.sleep(updateFreq);
+          	    if (!threadRunning)
+          	    {
+      		        return;
+                }
+
+          	    try
+                {
+                    Thread.sleep(50);
+                    n++;
+                } catch(Exception e) { e.printStackTrace(); }
+
+                if (n==40) //  40 * 50 ms = 2000 ms = 2 sec
+                {
+              	    n=1;
+              	    // TODO: update the background image with the most recent atlas image 
+             	    /*String path = Environment.getExternalStorageDirectory().toString();
+            	    String fname = path+"/atlas.png";*/
+                }
             }
-            catch(Exception e) 
-            {
-               e.printStackTrace();
-            }
-         }
-      }
-   }
-    
-/*************************************************************************
- * Menu and preferences functionality
- *************************************************************************/
-
-   @Override
-   public boolean onCreateOptionsMenu(Menu menu) {
-      super.onCreateOptionsMenu(menu);
-      menu.add(0, MENU_PREFERENCES, Menu.NONE, R.string.menu_preferences);
-      return true;
-   };
-
-   public boolean onOptionsItemSelected(MenuItem item) {
-      super.onOptionsItemSelected(item);
-
-      switch (item.getItemId()) {
-         case (MENU_PREFERENCES): {
-            Intent i = new Intent(this, Preferences.class);
-            startActivityForResult(i, SHOW_PREFERENCES);
-            return true;
-         }
-      }
-      return false;
-   };
-
-   private void updateFromPreferences() {
-      Context context = getApplicationContext();
-      SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-      updateFreq = Integer.parseInt(prefs.getString(Preferences.PREF_UPDATE_FREQ, "1000"));
-   };
+        }
+    }
 }

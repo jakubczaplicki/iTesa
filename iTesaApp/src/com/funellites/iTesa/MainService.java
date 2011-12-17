@@ -1,8 +1,5 @@
 package com.funellites.iTesa;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -15,7 +12,7 @@ public class MainService extends Service {
     public final static String TAG = "iTesa";
     public static long instance = 0;
     private Magnetometer magnetometer;
-    private Queue<DataMagnetometer> dataQueue = null;
+    //private Queue<DataMagnetometer> dataQueue = null;
     private DBAdapter dbAdapter;
     private Graph     graph;
 
@@ -32,9 +29,10 @@ public class MainService extends Service {
     @Override
     public void onCreate()
     {
+    	Log.d(TAG,this.getClass().getName()+":onCreate()");
         nManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         magnetometer = new Magnetometer(this);
-        dataQueue    = new LinkedList<DataMagnetometer>();
+        //dataQueue    = new LinkedList<DataMagnetometer>();
         dbAdapter    = new DBAdapter(this);
         dbAdapter.open();
         graph = new Graph( dbAdapter );
@@ -45,12 +43,11 @@ public class MainService extends Service {
     @Override
     public void onDestroy() 
     {
+    	Log.d(TAG,this.getClass().getName()+":onDestroy()");
         RUNNING = false;
-        //threadSaveDataMag.threadRunning  = false;
-        threadSaveDataTel.threadRunning  = false;
+        threadSaveData.threadRunning  = false;
         threadUpdateBitmap.threadRunning  = false;
-        //try { threadSaveDataMag.join(); } catch (InterruptedException e) { e.printStackTrace(); }
-        try { threadSaveDataTel.join(); } catch (InterruptedException e) { e.printStackTrace(); }
+        try { threadSaveData.join(); } catch (InterruptedException e) { e.printStackTrace(); }
         try { threadUpdateBitmap.join(); } catch (InterruptedException e) { e.printStackTrace(); }
         
         if ( dbAdapter.isOpen ) 
@@ -63,7 +60,7 @@ public class MainService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) 
     {
-        Log.i( TAG, "Received start id " + startId + ": " + intent);
+        Log.d( TAG, "Received start id " + startId + ": " + intent);
 
         if (!RUNNING) {
         	magnetometer.start();
@@ -73,76 +70,56 @@ public class MainService extends Service {
         return START_STICKY;
     }
     
-    /*** Thread functionality - saving data ***/
-    //private ThreadSaveDataMag threadSaveDataMag; // save magnetometer data
-    private ThreadSaveTelemetry threadSaveDataTel; //save telemetry data
+    /*** Thread functionality ***/
+    private ThreadSaveData threadSaveData;
     private ThreadUpdateBitmap threadUpdateBitmap;
 
-    /** Creates the thread (this method is invoked from onCreate()) */
+    /** Creates the thread - this method is invoked from onCreate() */
     private void makeThread() {
-       //threadSaveDataMag = new ThreadSaveDataMag();
-       threadSaveDataTel = new ThreadSaveTelemetry();
+       threadSaveData     = new ThreadSaveData();
        threadUpdateBitmap = new ThreadUpdateBitmap();
-       //threadSaveDataMag.start();
-       threadSaveDataTel.start();
+       threadSaveData.start();
        threadUpdateBitmap.start();
     }
 
-    /** Thread class for saving magnetic data to the sqlite db */
-    class ThreadSaveDataMag extends Thread 
-    {
-       public boolean threadRunning = true;
-       private long status = 0;
-
-       public ThreadSaveDataMag() {}
-
-       @Override
-       public void run() 
-       {
-          Log.d("iTesa", "Run: ThreadSaveDataMag()");
-          while (threadRunning) 
-          {
-              //Log.d("iTesa", "elements in queue:" + dataQueue.size());
-              //if( !dataQueue.isEmpty() )
-        	  if ( magnetometer.dataMag != null )
-              {
-                  Log.d(TAG, "Storing magnetic data");
-
-            	  status = dbAdapter.insertDataMagnetometer( magnetometer.dataMag );
-         	      if ( -1 == status )
-         	          Log.d("iTesa", "db.insert failed");            	 
-
-              }
-              try { Thread.sleep(2000); } catch(Exception e) { e.printStackTrace(); }
-        	  //Log.d("iTesa", "db.insert status :" + status);
-          }
-       }
-    }
-
     /** Thread class for saving position data to the sqlite db */
-    class ThreadSaveTelemetry extends Thread 
+    class ThreadSaveData extends Thread 
     {
         public boolean threadRunning = true;
         private long status = 0;
 
-        public ThreadSaveTelemetry() {}
+        public ThreadSaveData() {}
 
         @Override
         public void run() 
         {
         	Log.d("iTesa", "Run: ThreadSaveDataTel()");
-            while (threadRunning) 
+            int n=1;
+            while (true) 
             {
-                try { Thread.sleep(2000); } catch(Exception e) { e.printStackTrace(); }
+            	if (!threadRunning)
+            	{
+        		    return;
+                }
 
-            	Log.d(TAG, "Storing simulated position data + sensor data");
-            	/* TODO: add code to fetch data from the telemetry file */
-                DataTelemetry dataTelemetry = new DataTelemetry( magnetometer.dataMag.t , magnetometer.n );
-                DataMagnetometer dataMagnetometer = magnetometer.dataMag;
+                try
+                {
+                    Thread.sleep(50);
+                    n++;
+                } catch(Exception e) { e.printStackTrace(); }
 
-                status = dbAdapter.insertDataTelemetry(dataTelemetry, dataMagnetometer);
-                if ( -1 == status )
-         	        Log.d("iTesa", "db.insert failed");
+                if (n==40) //  40 * 50 ms = 2000 ms = 2 sec
+                {
+                	n=1;
+            	    Log.d(TAG, "Storing simulated position data + sensor data");
+            	    /* TODO: add code to fetch data from the telemetry file */
+                    DataTelemetry dataTelemetry = new DataTelemetry( magnetometer.dataMag.t , magnetometer.n );
+                    DataMagnetometer dataMagnetometer = magnetometer.dataMag;
+
+                    status = dbAdapter.insertDataTelemetry(dataTelemetry, dataMagnetometer);
+                    if ( -1 == status )
+         	            Log.d("iTesa", "db.insert failed");
+                }
             }
         }
     }
@@ -150,23 +127,40 @@ public class MainService extends Service {
     /** Thread class for updating the bitmap */
     class ThreadUpdateBitmap extends Thread 
     {
-       public boolean threadRunning = true;
-       public ThreadUpdateBitmap() {}
-       @Override
-       public void run() 
-       {
+        public boolean threadRunning = true;
+        public ThreadUpdateBitmap() {}
+        @Override
+        public void run() 
+        {
             Log.d("iTesa", "Run: ThreadUpdateBitmap()");
-            while (threadRunning) 
+            int n=1;
+            while (true) 
             {
-                try { Thread.sleep(30000); } catch(Exception e) { e.printStackTrace(); }
-            	Log.d(TAG, "Creating bitmap");
-                graph.createBitmap();
+        	    if (!threadRunning) 
+        	    {
+        	        return; 
+        	    }
+
+        	    try 
+        	    {
+        	        Thread.sleep(50);
+        	        n++;
+        	    } catch(Exception e) { e.printStackTrace(); }
+
+                if (n==600) // 1200*50 ms = 60000 ms = 1 min
+                {
+                	n=1;
+            	    Log.d(TAG, "Creating bitmap");
+                    graph.createBitmap();
+                    //Toast doesn't work inside this thread - something to do with loopers - no idea what
+                    //Toast.makeText(getBaseContext(), "Creating bitmap", Toast.LENGTH_SHORT).show();
+                }
             }
-       }
+            
+        }
     }
 
     /*** Show notification after starting the service ***/
-
     private void showNotification()
     {
         Notification notification = new Notification(R.drawable.icon, "iTesa", System.currentTimeMillis());
@@ -175,5 +169,4 @@ public class MainService extends Service {
         notification.flags |= Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT;
         nManager.notify(1, notification);
     }
-    
 }
