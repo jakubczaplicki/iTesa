@@ -90,8 +90,8 @@ public class Graph {
            	    float lng = cursor.getFloat(cursor.getColumnIndex(KEY_LNG));
            	    float lat = cursor.getFloat(cursor.getColumnIndex(KEY_LAT));
            	    float absB = cursor.getFloat(cursor.getColumnIndex(KEY_ABSB));
-                int r = (int) ( (double) absB * 255.0 / 100.0);
-                int g = (int) ( (double) absB * 255.0 / 100.0);
+                int r = (int) ( (double) absB * 255.0 / 200.0);
+                int g = (int) ( (double) absB * 255.0 / 200.0);
                 int b = 255 - Math.min(r, g);
                 int a = 255;
                 int x = (int) ( (double) lng * ( (double) (WIDTH-1) / 360.0 ) );

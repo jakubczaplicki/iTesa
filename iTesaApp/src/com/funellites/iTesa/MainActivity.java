@@ -40,16 +40,18 @@ public class MainActivity extends Activity implements OnClickListener  {
         Log.d(TAG,this.getClass().getName()+":onCreate()");
         setContentView(R.layout.main);
 
-        //imageView    = (ImageView) findViewById(R.id.image);
+        imageView = (ImageView) findViewById(R.id.image);
+        imageView.setImageResource(R.drawable.topomap);
+        
         startService   = (CheckBox) findViewById(R.id.startService);
         startService.setOnClickListener(this);
         
         //makeThread(); // start a thread to refresh UI
 
         getWindow().addFlags( WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
-                            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
-                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                            WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD );
+                              WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
+                              WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                              WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD );
     }
     
     public void onClick(View src) 

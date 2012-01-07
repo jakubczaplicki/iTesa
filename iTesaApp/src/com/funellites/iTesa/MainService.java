@@ -55,6 +55,7 @@ public class MainService extends Service {
             dbAdapter.close();
         }
         magnetometer.stop();
+        showNotification();
     }
 
     @Override
@@ -95,6 +96,7 @@ public class MainService extends Service {
         {
         	Log.d("iTesa", "Run: ThreadSaveDataTel()");
             int n=1;
+            int i=1;
             while (true) 
             {
             	if (!threadRunning)
@@ -108,12 +110,13 @@ public class MainService extends Service {
                     n++;
                 } catch(Exception e) { e.printStackTrace(); }
 
-                if (n==40) //  40 * 50 ms = 2000 ms = 2 sec
+                if (n==20) //  20 * 50 ms = 1000 ms = 1 sec
                 {
                 	n=1;
-            	    Log.d(TAG, "Storing simulated position data + sensor data");
+            	    Log.d(TAG, "Storing simulated position data + sensor data (sample: " + magnetometer.n + " )");
             	    /* TODO: add code to fetch data from the telemetry file */
-                    DataTelemetry dataTelemetry = new DataTelemetry( magnetometer.dataMag.t , magnetometer.n );
+            	    i=i+20;
+                    DataTelemetry dataTelemetry = new DataTelemetry( magnetometer.dataMag.t , i );
                     DataMagnetometer dataMagnetometer = magnetometer.dataMag;
 
                     status = dbAdapter.insertDataTelemetry(dataTelemetry, dataMagnetometer);
