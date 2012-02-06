@@ -39,13 +39,11 @@ public class Magnetometer implements SensorEventListener
         start();
     }
 
-    @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) { }
 
     long TimeNew = System.nanoTime();
     long TimeOld = TimeNew;
 
-    @Override
     public void onSensorChanged(SensorEvent event) 
     {
         synchronized (this) 

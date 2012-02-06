@@ -46,18 +46,18 @@ public class Graph {
         dbAdapter = _dbAdapter;
     }
 
-   private static final int WIDTH = 1440;
-   private static final int HEIGHT = 720;
+   private static final int WIDTH = 1200; //1440;
+   private static final int HEIGHT = 600; //720;
    private static final int STRIDE = WIDTH;   // must be >= WIDTH
    
     public void createBitmap() 
     {
-        //db related
+        /* Database related code */
     	long lastRow = dbAdapter.getLastCursor();
         Cursor cursor = dbAdapter.getDataTelemetry( lastRow );
-     	Log.d(TAG, "Last row was : "+ lastRow);
+     	// Log.d(TAG, "Last row was : "+ lastRow);
 
-        // load png bitmap
+        /* Load PNG bitmap */
     	String path = Environment.getExternalStorageDirectory().toString();
         File file = new File(path + "/" + FILENAME);
 
@@ -69,6 +69,7 @@ public class Graph {
 			Log.d(TAG,"File not found - create new !");
 			e1.printStackTrace();
 			try {
+				Log.d(TAG,"Loading earth.png");
 				File fileOrig = new File(path + "/" + "earth.png");
 				InputStream inStream;
 				inStream = new FileInputStream(fileOrig);
@@ -79,7 +80,7 @@ public class Graph {
 			}
 		}
 		
-		// modify bitmap based on data from sqlite
+		/* Modify bitmap based on data from sqlite */
      	int[] colors = new int[ WIDTH * HEIGHT ];
 		bitmap.getPixels(colors, 0, STRIDE, 0, 0, WIDTH , HEIGHT );
 
@@ -96,6 +97,8 @@ public class Graph {
                 int a = 255;
                 int x = (int) ( (double) lng * ( (double) (WIDTH-1) / 360.0 ) );
                 int y = (int) ( (double) lat * ( (double) (HEIGHT-1) / 180.0 ) );
+                
+                Log.d(TAG, "" + x + "," + y);
                     
                 if ((y * WIDTH + x) < (WIDTH * HEIGHT) )
                     colors[y * WIDTH + x] = (a << 24) | (r << 16) | (g << 8) | b;
@@ -103,13 +106,13 @@ public class Graph {
                 	Log.d(TAG,"Array out of bounds !!");
           	} while(cursor.moveToNext());
           	dbAdapter.updateCursors( lastRow + (long) cursor.getPosition() );
-           	Log.d(TAG, "Last cursor pos: "+ (lastRow + cursor.getPosition()) );
+           	// Log.d(TAG, "Last cursor pos: "+ (lastRow + cursor.getPosition()) );
         }
 		
         bitmap.setPixels(colors, 0, STRIDE, 0, 0, WIDTH , HEIGHT );
         
-        Log.d(TAG,path + "/" + FILENAME);
-        Log.d(TAG, "Saving png file to " + file);
+        // Log.d(TAG,path + "/" + FILENAME);
+        // Log.d(TAG, "Saving png file to " + file);
         
         try {
         	OutputStream outStream = new FileOutputStream(file);

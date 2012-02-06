@@ -82,10 +82,12 @@ public long insertDataTelemetry(DataTelemetry dataPos, DataMagnetometer dataMag)
     newValues.put( KEY_ABSB, dataMag.abs );    
     
     long ret = db.insert(DB_TABLE, null, newValues); // Insert the row
-    Log.d(TAG, "row: " + ret + 
+    /*
+    Log.d(TAG, "row: " + ret +
     		   " lng: " + dataPos.lng +
     		   " lat: " + dataPos.lat +
     		   " abs: " + dataMag.abs);
+    */
     return ret;
 }
 

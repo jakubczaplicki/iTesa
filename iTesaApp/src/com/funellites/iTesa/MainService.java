@@ -113,9 +113,9 @@ public class MainService extends Service {
                 if (n==20) //  20 * 50 ms = 1000 ms = 1 sec
                 {
                 	n=1;
-            	    Log.d(TAG, "Storing simulated position data + sensor data (sample: " + magnetometer.n + " )");
+            	    //Log.d(TAG, "Storing simulated position data + sensor data (sample: " + magnetometer.n + " )");
             	    /* TODO: add code to fetch data from the telemetry file */
-            	    i=i+20;
+            	    i=i+3;
                     DataTelemetry dataTelemetry = new DataTelemetry( magnetometer.dataMag.t , i );
                     DataMagnetometer dataMagnetometer = magnetometer.dataMag;
 
