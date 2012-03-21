@@ -16,9 +16,20 @@
 
 package com.funellites.iTesa;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -41,7 +52,7 @@ public class MainActivity extends Activity implements OnClickListener  {
         setContentView(R.layout.main);
 
         imageView = (ImageView) findViewById(R.id.image);
-        imageView.setImageResource(R.drawable.topomap);
+        imageView.setImageResource(R.drawable.atlas);
         
         startService   = (CheckBox) findViewById(R.id.startService);
         startService.setOnClickListener(this);
@@ -53,7 +64,7 @@ public class MainActivity extends Activity implements OnClickListener  {
                               WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
                               WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD );
     }
-    
+
     public void onClick(View src) 
     {
         switch (src.getId()) 

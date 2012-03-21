@@ -23,8 +23,8 @@ import android.util.Log;
 
 public abstract class DataItem
 {
-	
-   CsvFileAdapter csvFileAdapter = null;
+	/*
+   CsvFile csvFileAdapter = null;
    private final static List<DataMagnetometer> dataArray = new ArrayList<DataMagnetometer>();
 
    public DataItem()
@@ -38,16 +38,16 @@ public abstract class DataItem
         B.z = _zB;
         setAvg(size);
         this.dataArray = new ArrayList<magData>();*/
-   }
+  /* }
 
    public void add(long t, float x,float y,float z) {
       DataMagnetometer b = new DataMagnetometer(t, x, y, z);
       dataArray.add(b);
       Log.d("iTesa", "add Bt: " + b.t);
    }
-
-   public void logFileOpen() {
-      csvFileAdapter = new CsvFileAdapter("iTesa", "iTesa.csv");
+*/
+   /*public void logFileOpen() {
+      csvFileAdapter = new CsvFile("iTesa", "iTesa.csv");
       csvFileAdapter.openWriter();
    }
 
@@ -67,5 +67,5 @@ public abstract class DataItem
          Log.d("iTesa", "save Bt: " + magData.t);
          this.csvFileAdapter.write(magData);
       }
-   }
+   }*/
 }

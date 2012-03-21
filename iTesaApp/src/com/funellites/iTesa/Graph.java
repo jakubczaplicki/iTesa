@@ -18,7 +18,6 @@ package com.funellites.iTesa;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,20 +36,22 @@ public class Graph {
     private static final String KEY_LNG     = "lng";
     private static final String KEY_ABSB    = "absB";
     
-    private static final String FILENAME    = "atlas.png";
-	
     static DBAdapter dbAdapter;
-	
-    public Graph(DBAdapter _dbAdapter ) 
+    static String dataDirName;
+    static String pngFileName;
+    
+    public Graph(DBAdapter _dbAdapter, String _dataDirName, String _pngFileName ) 
     {
         dbAdapter = _dbAdapter;
+        dataDirName = _dataDirName;
+        pngFileName =  _pngFileName;
     }
 
    private static final int WIDTH = 1200; //1440;
    private static final int HEIGHT = 600; //720;
    private static final int STRIDE = WIDTH;   // must be >= WIDTH
    
-    public void createBitmap() 
+    public void updateBitmap() 
     {
         /* Database related code */
     	long lastRow = dbAdapter.getLastCursor();
@@ -59,31 +60,20 @@ public class Graph {
 
         /* Load PNG bitmap */
     	String path = Environment.getExternalStorageDirectory().toString();
-        File file = new File(path + "/" + FILENAME);
-
+        File file = new File(path + "/" + dataDirName + "/" + pngFileName);
         Bitmap bitmap = null;
-		try {
-			InputStream inStream = new FileInputStream(file);
-			bitmap = BitmapFactory.decodeStream(inStream).copy(Bitmap.Config.ARGB_8888, true);
-		} catch (FileNotFoundException e1) {
-			Log.d(TAG,"File not found - create new !");
-			e1.printStackTrace();
-			try {
-				Log.d(TAG,"Loading earth.png");
-				File fileOrig = new File(path + "/" + "earth.png");
-				InputStream inStream;
-				inStream = new FileInputStream(fileOrig);
-				bitmap = BitmapFactory.decodeStream(inStream).copy(Bitmap.Config.ARGB_8888, true);
-			} catch (FileNotFoundException e) {
-				Log.d(TAG,"Can't even create new bitmap !");
-				e.printStackTrace();
-			}
+		try 
+		{
+		    InputStream inStream = new FileInputStream(file);
+		    bitmap = BitmapFactory.decodeStream(inStream).copy(Bitmap.Config.ARGB_8888, true);					
+		} catch (Exception e) {
+			Log.e(TAG,"Can't load the png file.");
+			Log.e(TAG,e.getMessage());
 		}
-		
+
 		/* Modify bitmap based on data from sqlite */
      	int[] colors = new int[ WIDTH * HEIGHT ];
 		bitmap.getPixels(colors, 0, STRIDE, 0, 0, WIDTH , HEIGHT );
-
         if (cursor.moveToFirst())
         {
          	do 
@@ -91,15 +81,17 @@ public class Graph {
            	    float lng = cursor.getFloat(cursor.getColumnIndex(KEY_LNG));
            	    float lat = cursor.getFloat(cursor.getColumnIndex(KEY_LAT));
            	    float absB = cursor.getFloat(cursor.getColumnIndex(KEY_ABSB));
+           	    
+           	    /* TODO: this needs reworking and rescaling */
                 int r = (int) ( (double) absB * 255.0 / 200.0);
                 int g = (int) ( (double) absB * 255.0 / 200.0);
                 int b = 255 - Math.min(r, g);
                 int a = 255;
                 int x = (int) ( (double) lng * ( (double) (WIDTH-1) / 360.0 ) );
                 int y = (int) ( (double) lat * ( (double) (HEIGHT-1) / 180.0 ) );
-                
+
                 Log.d(TAG, "" + x + "," + y);
-                    
+
                 if ((y * WIDTH + x) < (WIDTH * HEIGHT) )
                     colors[y * WIDTH + x] = (a << 24) | (r << 16) | (g << 8) | b;
                 else
@@ -108,12 +100,9 @@ public class Graph {
           	dbAdapter.updateCursors( lastRow + (long) cursor.getPosition() );
            	// Log.d(TAG, "Last cursor pos: "+ (lastRow + cursor.getPosition()) );
         }
-		
         bitmap.setPixels(colors, 0, STRIDE, 0, 0, WIDTH , HEIGHT );
-        
-        // Log.d(TAG,path + "/" + FILENAME);
-        // Log.d(TAG, "Saving png file to " + file);
-        
+
+        /* Save bitmap */
         try {
         	OutputStream outStream = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.PNG, 85, outStream);
@@ -122,5 +111,4 @@ public class Graph {
             }
         catch (IOException e) { e.printStackTrace(); }       
     }
-
 }

@@ -1,21 +1,34 @@
 package com.funellites.iTesa;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 
 public class MainService extends Service {
-    public final static String TAG = "iTesa";
+    public final static String TAG = "iTesa";    
     public static long instance = 0;
     private Magnetometer magnetometer;
-    //private Queue<DataMagnetometer> dataQueue = null;
-    private DBAdapter dbAdapter;
-    private Graph     graph;
+    private DBAdapter    dbAdapter;
+    private Graph        graph;
+    private CsvFile      csvFile;
 
+    private static final String DATAFOLDER = "iTesa";
+    private static final String PNGFILENAME = "atlas.png";
+	private static final String CSVFILENAME = "atlas.csv";
+    
     private boolean RUNNING = false;
 
     private NotificationManager nManager;
@@ -31,15 +44,44 @@ public class MainService extends Service {
     {
     	Log.d(TAG,this.getClass().getName()+":onCreate()");
         nManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        /* Make sure we've got png bitmap */
+        String path = Environment.getExternalStorageDirectory().toString();
+        File file = new File(path + "/" + DATAFOLDER + "/" + PNGFILENAME);
+        try { /* try opening the file */
+			InputStream inStream = new FileInputStream(file);
+		} catch (FileNotFoundException e) {
+			Log.d(TAG,"File not found - copy new file from res !");
+		    try {
+		        InputStream in = getResources().openRawResource( R.drawable.atlas );
+		        OutputStream out = new FileOutputStream(file);
+		        copyFile(in, out);
+		        in.close();
+		        in = null;
+		        out.flush();
+		        out.close();
+		        out = null;
+		    } catch (Exception e2) {
+		    	Log.e(TAG, e2.getMessage()); }
+		}
+        
         magnetometer = new Magnetometer(this);
         //dataQueue    = new LinkedList<DataMagnetometer>();
         dbAdapter    = new DBAdapter(this);
         dbAdapter.open();
-        graph = new Graph( dbAdapter );
+        graph   = new Graph( dbAdapter, DATAFOLDER, PNGFILENAME );
+        csvFile = new CsvFile( dbAdapter, DATAFOLDER, CSVFILENAME );
         makeThread();
         showNotification();
     }
 
+	private void copyFile(InputStream in, OutputStream out) throws IOException
+	{
+	   	byte[] buffer = new byte[1024];
+	   	int read;
+	   	while((read = in.read(buffer)) != -1) { out.write(buffer, 0, read); }	
+	}
+    
     @Override
     public void onDestroy() 
     {
@@ -153,13 +195,12 @@ public class MainService extends Service {
                 if (n==600) // 1200*50 ms = 60000 ms = 1 min
                 {
                 	n=1;
+            	    Log.d(TAG, "Saving CSV file");
+            	    csvFile.updateFile(); // first save CSV file - this method will NOT update DB cursor
             	    Log.d(TAG, "Creating bitmap");
-                    graph.createBitmap();
-                    //Toast doesn't work inside this thread - something to do with loopers - no idea what
-                    //Toast.makeText(getBaseContext(), "Creating bitmap", Toast.LENGTH_SHORT).show();
+            	    graph.updateBitmap(); // then update bitmap - this method will update DB cursor
                 }
             }
-            
         }
     }
 
