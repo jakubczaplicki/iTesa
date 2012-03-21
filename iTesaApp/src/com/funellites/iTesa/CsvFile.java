@@ -67,7 +67,7 @@ public class CsvFile {
             }
             //Log.d("iTesa", "CsvFileAdapter: " + root + " " + getDateTime() + csvFileName);
             //csvFileName = getDateTime() + "_" + fileName;
-            Log.d("iTesa", "CsvFile: " + root + "/" + csvFileName);
+            Log.d(TAG, "CsvFile: " + root + "/" + csvFileName);
             file = new File(root, csvFileName);
 		}
    }

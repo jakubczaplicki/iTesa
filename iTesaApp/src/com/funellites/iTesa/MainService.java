@@ -47,6 +47,10 @@ public class MainService extends Service {
 
         /* Make sure we've got png bitmap */
         String path = Environment.getExternalStorageDirectory().toString();
+        
+        File newFolder = new File(path + "/" + DATAFOLDER);
+        newFolder.mkdir();
+        
         File file = new File(path + "/" + DATAFOLDER + "/" + PNGFILENAME);
         try { /* try opening the file */
 			InputStream inStream = new FileInputStream(file);
